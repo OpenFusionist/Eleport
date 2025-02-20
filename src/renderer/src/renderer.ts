@@ -67,12 +67,12 @@ async function doAThing(): Promise<void> {
 
 
 
-  const { error } = await window.api.checkUpdate()
-  if (error === ""){
-    replaceText('.electron-version', `up-to-date`)
-  }else{
-    replaceText('.electron-version', `error: ${error}`)
-  }
+  // const { error } = await window.api.checkUpdate()
+  // if (error === ""){
+  //   replaceText('.electron-version', `up-to-date`)
+  // }else{
+  //   replaceText('.electron-version', `error: ${error}`)
+  // }
 }
 
 

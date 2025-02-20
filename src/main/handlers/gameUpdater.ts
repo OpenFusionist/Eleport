@@ -14,7 +14,7 @@ import { globalVars } from './../vars';
 //     size: number;
 // }
 
-interface Fileinfo {
+export interface Fileinfo {
     Md5: string
     Size: number
     Path?: string
@@ -25,11 +25,14 @@ interface Manifest {
     Files: {[key: string]: Fileinfo}
 }
 
+export let CacheLocalManifestFiles: {[key: string]: Fileinfo} = {}
+
 function getLOCAL_MANIFEST_FILE(): string {
     return path.join(GetGameDownloadDir(), 'manifest.json');
 }
 
-function readLocalManifest(): Manifest | null { 
+function readLocalManifest(): Manifest { 
+    const emptyManifest: Manifest = { Total: 0, Files: {} }
     const LOCAL_MANIFEST_FILE = getLOCAL_MANIFEST_FILE()
     
     if (fs.existsSync(LOCAL_MANIFEST_FILE)) {
@@ -37,14 +40,14 @@ function readLocalManifest(): Manifest | null {
             return JSON.parse(fs.readFileSync(LOCAL_MANIFEST_FILE, 'utf8')) as Manifest;
         } catch (e) {
             console.error('read manifest error:', e);
-            return null
+            return emptyManifest
         }
     }
-    return null
+    return emptyManifest
 }
 
 
-function writeLocalManifest(manifest: Manifest): void {
+export function writeLocalManifest(manifest: Manifest): void {
     const LOCAL_MANIFEST_FILE = getLOCAL_MANIFEST_FILE()
     
     fs.writeFileSync(LOCAL_MANIFEST_FILE, JSON.stringify(manifest, null, 2));
@@ -107,6 +110,11 @@ async function downloadFilesConcurrently(
         for (const file of fileList) {
 
             await downloadFile(file.Path || "");
+
+            CacheLocalManifestFiles[file.Path || ""] = {
+                Md5: file.Md5,
+                Size: file.Size
+            }
             completed++;
             completedSize += file.Size
             if (progressCallback) {
@@ -174,13 +182,15 @@ async function checkForGameUpdate(): Promise<IUpdateResult> {
     try {
         const manifestUrl = `${UPDATE_SERVER_URL}/manifest.json`;
         const { data: remoteManifest } = await axios.get<Manifest>(manifestUrl);
-        // const totlaSize = remoteManifest.Total
+
         const localManifest = readLocalManifest();
 
         const { filesToDownload, filesToDelete, downloadSize } = compareManifests(localManifest, remoteManifest);
+        CacheLocalManifestFiles = localManifest.Files
 
         for (const filePath of filesToDelete) {
             deleteFile(filePath);
+            delete CacheLocalManifestFiles[filePath]
             mainWindow?.webContents.send('game-update-progress', { type: 'delete', file: filePath });
         }
 
@@ -195,7 +205,7 @@ async function checkForGameUpdate(): Promise<IUpdateResult> {
         });
 
         writeLocalManifest(remoteManifest);
-        
+
         globalVars.IsUpdated = true;
         return { error: "" };
     } catch (error: unknown) {

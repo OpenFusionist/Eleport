@@ -5,8 +5,7 @@ import icon from '../../resources/icon.png?asset'
 import { initSelfUpdater } from './selfUpdater'
 import { AppUserModelId } from './configs'
 import { initHandlers } from './handlers/handlers'
-import { generateManifest } from './handlers/manifest'
-import { GetGameDownloadDir } from './utils'
+import { CacheLocalManifestFiles, checkForGameUpdate, writeLocalManifest } from './handlers/gameUpdater'
 import { globalVars } from './vars'
 // import { init as SentryInit } from "@sentry/electron/main";
 
@@ -17,14 +16,6 @@ export let mainWindow:BrowserWindow | undefined
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(async () => {
-  // Set app user model id for windows
-  electronApp.setAppUserModelId(AppUserModelId)
-  initSelfUpdater()
-
-  // SentryInit({
-  //   dsn: import.meta.env.VITE_SENTRY_DSN,
-  // });
-
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.
   // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
@@ -38,13 +29,14 @@ app.whenReady().then(async () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
 
-  createWindow()
+  
+  // Set app user model id for windows
+  electronApp.setAppUserModelId(AppUserModelId)
+  initSelfUpdater()
   initHandlers()
+  createWindow()
 
-  await generateManifest(GetGameDownloadDir())
- 
-  globalVars.InitManifest = true
-  console.log(globalVars.InitManifest)
+  checkForGameUpdate();
 })
 
 // Quit when all windows are closed, except on macOS. There, it's common
@@ -55,6 +47,21 @@ app.on('window-all-closed', () => {
     app.quit()
   }
 })
+
+app.on('before-quit', async (event) => {
+  if (!globalVars.IsUpdated) {
+    event.preventDefault()
+    const Manifest = {
+      Total: 0,
+      Files: CacheLocalManifestFiles
+    }
+    await writeLocalManifest(Manifest)
+    globalVars.IsUpdated = true
+    console.log('before-quit save success!')
+    app.quit()
+  }
+})
+
 
 function createWindow(): void {
   // Create the browser window.
