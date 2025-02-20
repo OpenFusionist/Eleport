@@ -17,3 +17,9 @@ $ pnpm dev
 ```bash
 $ pnpm build:win
 ```
+
+### Publish
+
+```bash
+$ pnpm publish
+```
