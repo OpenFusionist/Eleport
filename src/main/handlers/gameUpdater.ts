@@ -6,6 +6,7 @@ import { GetGameDownloadDir } from './../utils';
 import { UPDATE_SERVER_URL } from './../configs';
 import { mainWindow } from '../.';
 import { IUpdateResult } from '../../preload/index.d';
+import { globalVars } from './../vars';
 
 // interface RemoteFile {
 //     path: string;
@@ -139,7 +140,7 @@ function compareManifests(localManifest: Manifest | null, remoteManifest: Manife
         const _fileinfo = remoteManifest.Files[filePath]
         _fileinfo.Path = filePath
 
-        if(localManifest == null ){
+        if(localManifest == null || !localManifest.Files[filePath]){
             filesToDownload.push(_fileinfo);
             downloadSize += _fileinfo.Size
             continue
@@ -184,6 +185,7 @@ async function checkForGameUpdate(): Promise<IUpdateResult> {
         }
 
         if (filesToDownload.length === 0) {
+            globalVars.IsUpdated = true;
             return { error: "" };
         }
 
@@ -193,7 +195,8 @@ async function checkForGameUpdate(): Promise<IUpdateResult> {
         });
 
         writeLocalManifest(remoteManifest);
-
+        
+        globalVars.IsUpdated = true;
         return { error: "" };
     } catch (error: unknown) {
         console.error('update fail:', error);

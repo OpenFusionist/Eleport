@@ -4,10 +4,13 @@ import crypto from 'crypto';
 
 
 interface FileData {
-    name: string;
-    path: string;
-    size: number;
-    md5: string;
+    Size: number;
+    Md5: string;
+}
+
+interface Manifest {
+    Total: number;
+    Files: Record<string, FileData>;
 }
 
 const fileList: Record<string, FileData> = {};
@@ -44,11 +47,9 @@ const scanDirectory = async (dirPath: string, gamePath: string): Promise<void> =
                 const relativePath = fullPath.replace(gamePath+'\\', '').replace(/\\/g, '/');
                 const md5 = await calculateMD5(fullPath);
                 const stats = fs.statSync(fullPath);
-                fileList[relativePath] = {
-                    name: dirent.name,
-                    path: relativePath,
-                    size: stats.size,
-                    md5: md5,
+                fileList[relativePath] = { 
+                    Size: stats.size,
+                    Md5: md5,
                 };
             }
         }
@@ -62,7 +63,10 @@ export const generateManifest = async (folderPath: string): Promise<void> => {
         await scanDirectory(folderPath, folderPath);
 
 
-        const manifest = fileList;
+        const manifest:Manifest = {
+            Total: 0,
+            Files: fileList,
+        }
 
   
         const manifestPath = path.join(folderPath, 'manifest.json');

@@ -5,7 +5,10 @@ import icon from '../../resources/icon.png?asset'
 import { initSelfUpdater } from './selfUpdater'
 import { AppUserModelId } from './configs'
 import { initHandlers } from './handlers/handlers'
-import { init as SentryInit } from "@sentry/electron/main";
+import { generateManifest } from './handlers/manifest'
+import { GetGameDownloadDir } from './utils'
+import { globalVars } from './vars'
+// import { init as SentryInit } from "@sentry/electron/main";
 
 
 export let mainWindow:BrowserWindow | undefined
@@ -13,15 +16,15 @@ export let mainWindow:BrowserWindow | undefined
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.whenReady().then(() => {
-    
-  SentryInit({
-    dsn: import.meta.env.VITE_SENTRY_DSN,
-  });
-
+app.whenReady().then(async () => {
   // Set app user model id for windows
   electronApp.setAppUserModelId(AppUserModelId)
   initSelfUpdater()
+
+  // SentryInit({
+  //   dsn: import.meta.env.VITE_SENTRY_DSN,
+  // });
+
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.
   // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
@@ -37,6 +40,11 @@ app.whenReady().then(() => {
 
   createWindow()
   initHandlers()
+
+  await generateManifest(GetGameDownloadDir())
+ 
+  globalVars.InitManifest = true
+  console.log(globalVars.InitManifest)
 })
 
 // Quit when all windows are closed, except on macOS. There, it's common
