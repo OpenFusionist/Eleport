@@ -23,6 +23,7 @@ export interface IUpdateResult {
 export interface IGameUpdateProgressCallback {
   percent: number
   completed: number
+  completedSize: number
   total: number
   type: string
   totalSize: string

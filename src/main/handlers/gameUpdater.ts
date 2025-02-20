@@ -2,7 +2,7 @@
 import axios from 'axios';
 import fs from 'fs';
 import path from 'path';
-import { bytesToGB, GetGameDownloadDir } from './../utils';
+import { GetGameDownloadDir } from './../utils';
 import { UPDATE_SERVER_URL } from './../configs';
 import { mainWindow } from '../.';
 import { IUpdateResult } from '../../preload/index.d';
@@ -16,6 +16,7 @@ import { IUpdateResult } from '../../preload/index.d';
 interface Fileinfo {
     Md5: string
     Size: number
+    Path?: string
 }
 
 interface Manifest {
@@ -60,7 +61,6 @@ function ensureDirExist(filePath: string): void {
 async function downloadFile(remoteFile: string): Promise<string> {
     const GAME_DIR = GetGameDownloadDir()
     const fileUrl = `${UPDATE_SERVER_URL}/${remoteFile}`;
-    console.log("remoteFile.path",remoteFile,  remoteFile)
     const localPath = path.join(GAME_DIR, remoteFile);
     ensureDirExist(localPath);
 
@@ -68,7 +68,6 @@ async function downloadFile(remoteFile: string): Promise<string> {
     const response = await axios.get(fileUrl, { responseType: 'stream' });
 
     try{
-        console.log(remoteFile)
         await new Promise<void>((resolve, reject) => {
             response.data.pipe(writer);
             let error: Error | null = null;
@@ -95,19 +94,22 @@ async function downloadFile(remoteFile: string): Promise<string> {
 }
 
 async function downloadFilesConcurrently(
-    files: string[],
+    files: Fileinfo[],
     concurrency: number,
-    progressCallback: (completed: number, total: number) => void
+    progressCallback: (completed: number, completedSize: number, total: number) => void
 ): Promise<void> {
     let completed = 0;
+    let completedSize = 0;
     const total = files.length;
 
-    async function worker(fileList: string[]): Promise<void> {
+    async function worker(fileList: Fileinfo[]): Promise<void> {
         for (const file of fileList) {
-            await downloadFile(file);
+
+            await downloadFile(file.Path || "");
             completed++;
+            completedSize += file.Size
             if (progressCallback) {
-                progressCallback(completed, total);
+                progressCallback(completed, completedSize, total);
             }
         }
     }
@@ -125,22 +127,29 @@ async function downloadFilesConcurrently(
 }
 
 function compareManifests(localManifest: Manifest | null, remoteManifest: Manifest): {
-    filesToDownload: string[];
+    filesToDownload: Fileinfo[];
     filesToDelete: string[];
+    downloadSize: number;
 } {
-    const filesToDownload: string[] = [];
+    const filesToDownload: Fileinfo[] = [];
     const filesToDelete: string[] = [];
+    let downloadSize = 0;
 
     for (const filePath in remoteManifest.Files) {
+        const _fileinfo = remoteManifest.Files[filePath]
+        _fileinfo.Path = filePath
+
         if(localManifest == null ){
-            filesToDownload.push(filePath);
+            filesToDownload.push(_fileinfo);
+            downloadSize += _fileinfo.Size
             continue
         }
         
         const remoteMd5 = remoteManifest.Files[filePath].Md5
         const localMd5 = localManifest.Files[filePath].Md5
         if (!localMd5 || localMd5 !== remoteMd5) {
-            filesToDownload.push(filePath);
+            filesToDownload.push(_fileinfo);
+            downloadSize += _fileinfo.Size
         }
     }
 
@@ -150,7 +159,7 @@ function compareManifests(localManifest: Manifest | null, remoteManifest: Manife
         }
     }
 
-    return { filesToDownload, filesToDelete };
+    return { filesToDownload, filesToDelete, downloadSize };
 }
 
 function deleteFile(filePath: string): void {
@@ -164,10 +173,10 @@ async function checkForGameUpdate(): Promise<IUpdateResult> {
     try {
         const manifestUrl = `${UPDATE_SERVER_URL}/manifest.json`;
         const { data: remoteManifest } = await axios.get<Manifest>(manifestUrl);
-        const totlaSize = remoteManifest.Total
+        // const totlaSize = remoteManifest.Total
         const localManifest = readLocalManifest();
 
-        const { filesToDownload, filesToDelete } = compareManifests(localManifest, remoteManifest);
+        const { filesToDownload, filesToDelete, downloadSize } = compareManifests(localManifest, remoteManifest);
 
         for (const filePath of filesToDelete) {
             deleteFile(filePath);
@@ -178,9 +187,9 @@ async function checkForGameUpdate(): Promise<IUpdateResult> {
             return { error: "" };
         }
 
-        await downloadFilesConcurrently(filesToDownload, 10, (completed, total) => {
+        await downloadFilesConcurrently(filesToDownload, 10, (completed, completedSize, total) => {
             const percent = Math.round((completed / total) * 100);
-            mainWindow?.webContents.send('game-update-progress', { type: 'download', completed, total, percent, totalSize: bytesToGB(totlaSize) });
+            mainWindow?.webContents.send('game-update-progress', { type: 'download', completed, completedSize, total, percent, totalSize: downloadSize});
         });
 
         writeLocalManifest(remoteManifest);

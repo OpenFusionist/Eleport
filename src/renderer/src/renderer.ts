@@ -25,7 +25,7 @@ function initListeners(): void {
   window.api.receiveMessage('game-update-progress', (progressData: IGameUpdateProgressCallback) => {
     if (progressData.type === 'download') {
       replaceText('.electron-version', `
-        ${progressData.percent}% | Download progress:${progressData.completed} / ${progressData.total} file | TotalSize: ${progressData.totalSize} GB
+        ${progressData.percent}% | Download progress:${progressData.completed} / ${progressData.total} file | TotalSize: ${progressData.totalSize} bytes | CompletedSize: ${progressData.completedSize}
         `)
     } else if (progressData.type === 'delete') {
         // updateStatus.innerText = `${progressData.file}`;

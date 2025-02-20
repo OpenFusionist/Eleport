@@ -15,7 +15,7 @@ const api:TApi = {
 
   receiveMessage: (channel, callback):void => {
     if (validChannels.includes(channel)) {
-      ipcRenderer.on(channel, (event, ...args) => callback(...args));
+      ipcRenderer.on(channel, (_, ...args) => callback(...args));
     } else {
       console.warn(`Blocked unauthorized channel: ${channel}`);
     }
