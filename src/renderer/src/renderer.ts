@@ -1,4 +1,10 @@
 import { IGameUpdateProgressCallback } from "../../preload/index.d";
+import { bytesToGB } from "./utils";
+import { init as SentryInit } from "@sentry/electron/renderer";
+
+SentryInit({
+  dsn: import.meta.env.VITE_SENTRY_DSN,
+});
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div>
@@ -25,7 +31,7 @@ function initListeners(): void {
   window.api.receiveMessage('game-update-progress', (progressData: IGameUpdateProgressCallback) => {
     if (progressData.type === 'download') {
       replaceText('.electron-version', `
-        ${progressData.percent}% | Download progress:${progressData.completed} / ${progressData.total} file | TotalSize: ${progressData.totalSize} bytes | CompletedSize: ${progressData.completedSize}
+        ${progressData.percent}% | Download progress:${progressData.completed} / ${progressData.total} file | TotalSize: ${bytesToGB(progressData.totalSize)} GB | CompletedSize: ${bytesToGB(progressData.completedSize)} GB
         `)
     } else if (progressData.type === 'delete') {
         // updateStatus.innerText = `${progressData.file}`;

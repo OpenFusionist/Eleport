@@ -5,6 +5,8 @@ import icon from '../../resources/icon.png?asset'
 import { initSelfUpdater } from './selfUpdater'
 import { AppUserModelId } from './configs'
 import { initHandlers } from './handlers/handlers'
+import { init as SentryInit } from "@sentry/electron/main";
+
 
 export let mainWindow:BrowserWindow | undefined
 
@@ -12,6 +14,11 @@ export let mainWindow:BrowserWindow | undefined
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
+    
+  SentryInit({
+    dsn: import.meta.env.VITE_SENTRY_DSN,
+  });
+
   // Set app user model id for windows
   electronApp.setAppUserModelId(AppUserModelId)
   initSelfUpdater()

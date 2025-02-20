@@ -19,6 +19,3 @@ export function GetGameDownloadDir(): string {
   return path.join(GetResourceDir(), GAME_DOWNLOAD_DIR_NAME)
 }
 
-export function bytesToGB(bytes): string {
-  return (bytes / (1024 ** 3)).toFixed(2);
-}
