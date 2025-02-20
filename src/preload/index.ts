@@ -1,0 +1,44 @@
+import { contextBridge, ipcRenderer } from 'electron'
+import { IUpdateResult, TApi } from "./index.d"
+
+export const validChannels = ["game-update-progress", "repair", "play"];
+
+// Custom APIs for renderer
+const api:TApi = {
+  sendMessage: (channel, data):void => {
+    if (validChannels.includes(channel)) {
+      ipcRenderer.send(channel, data);
+    } else {
+      console.warn(`Blocked unauthorized channel: ${channel}`);
+    }
+  },
+
+  receiveMessage: (channel, callback):void => {
+    if (validChannels.includes(channel)) {
+      ipcRenderer.on(channel, (event, ...args) => callback(...args));
+    } else {
+      console.warn(`Blocked unauthorized channel: ${channel}`);
+    }
+  },
+
+  repair: ():Promise<void> => ipcRenderer.invoke('repair'),
+  
+  checkUpdate: ():Promise<IUpdateResult> => ipcRenderer.invoke('check-update')
+}
+
+// Use `contextBridge` APIs to expose Electron APIs to
+// renderer only if context isolation is enabled, otherwise
+// just add to the DOM global.
+if (process.contextIsolated) {
+  try {
+    // contextBridge.exposeInMainWorld('electron', electronAPI)
+    contextBridge.exposeInMainWorld('api', api)
+  } catch (error) {
+    console.error(error)
+  }
+} else {
+  // @ts-ignore (define in dts)
+  // window.electron = electronAPI
+  // @ts-ignore (define in dts)
+  window.api = api
+}

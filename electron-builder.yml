@@ -1,0 +1,26 @@
+appId: com.fusionist.eleport
+productName: Eleport
+directories:
+  buildResources: build
+files:
+  - '!**/.vscode/*'
+  - '!src/*'
+  - '!electron.vite.config.{js,ts,mjs,cjs}'
+  - '!{.eslintignore,.eslintrc.js,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
+  - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
+  - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
+asarUnpack:
+  - resources/**
+win:
+  executableName: Eleport
+  publish: 
+    - provider: github
+      protocol: https
+appImage:
+  artifactName: ${name}-${version}.${ext}
+npmRebuild: true
+publish:
+  provider: github
+  owner: OpenFusionist
+  repo: https://github.com/OpenFusionist/Eleport
+
