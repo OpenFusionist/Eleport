@@ -210,6 +210,14 @@ code {
   width: 146px;
   text-align: right;
 }
+.repair {
+  position: absolute;
+  bottom: 35px;
+  right: 20px;
+  width: 40px;
+  cursor: pointer;
+  display: none;
+}
 
 @media (max-width: 720px) {
   .text {

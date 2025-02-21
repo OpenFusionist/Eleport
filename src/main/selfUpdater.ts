@@ -7,6 +7,7 @@ export function initSelfUpdater(): void {
   const feedURL = SELF_UPDATE_SERVER
   autoUpdater.setFeedURL(feedURL);
   autoUpdater.autoDownload = true
+  // autoUpdater.forceDevUpdateConfig = true
   autoUpdater.checkForUpdates()
 
   // Listener
