@@ -38,7 +38,7 @@ export function initSelfUpdater(): void {
       title: "update completed",
       message: "The new version has been downloaded, the application will automatically restart and install the update.",
     }).then(() => {
-      autoUpdater.quitAndInstall();
+      autoUpdater.quitAndInstall(true, true);
     });
   });
 }
