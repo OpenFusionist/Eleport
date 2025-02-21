@@ -19,3 +19,6 @@ export function GetGameDownloadDir(): string {
   return path.join(GetResourceDir(), GAME_DOWNLOAD_DIR_NAME)
 }
 
+export function wait(ms): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}

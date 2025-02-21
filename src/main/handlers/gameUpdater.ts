@@ -2,7 +2,7 @@
 import axios from 'axios';
 import fs from 'fs';
 import path from 'path';
-import { GetGameDownloadDir } from './../utils';
+import { GetGameDownloadDir, wait } from './../utils';
 import { UPDATE_SERVER_URL } from './../configs';
 import { mainWindow } from '../.';
 import { IUpdateResult } from '../../preload/index.d';
@@ -69,23 +69,30 @@ async function downloadFile(remoteFile: string): Promise<string> {
     ensureDirExist(localPath);
 
     const writer = fs.createWriteStream(localPath);
-    const response = await axios.get(fileUrl, { responseType: 'stream' });
 
     try{
-        await new Promise<void>((resolve, reject) => {
-            response.data.pipe(writer);
-            let error: Error | null = null;
-            writer.on('error', (err: Error) => {
-                error = err;
-                writer.close();
-                reject(err);
-            });
-            writer.on('close', () => {
-                if (!error) {
-                    resolve();
-                }
-            });
-        });
+        const response = await axios.get(fileUrl, { responseType: 'stream' });
+        const isSuccess = await Promise.race([
+            wait(30 * 1000),
+            new Promise<number>((resolve, reject) => {
+                response.data.pipe(writer);
+                let error: Error | null = null;
+                writer.on('error', (err: Error) => {
+                    error = err;
+                    writer.close();
+                    reject(err);
+                });
+                writer.on('close', () => {
+                    if (!error) {
+                        resolve(1);
+                    }
+                });
+            })
+        ]);
+
+        if(isSuccess !== 1){
+            return await downloadFile(remoteFile)
+        }
     }catch(e:unknown){
         if(e instanceof Error){
             mainWindow?.webContents.send("error", {
@@ -93,9 +100,9 @@ async function downloadFile(remoteFile: string): Promise<string> {
                 message: e.message
             })
         }
-        downloadFile(remoteFile)
+        await wait(1000)
+        return await downloadFile(remoteFile)
     }
-
    
     return localPath;
 }
