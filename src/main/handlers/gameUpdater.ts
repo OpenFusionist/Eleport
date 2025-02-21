@@ -73,7 +73,7 @@ async function downloadFile(remoteFile: string): Promise<string> {
     try{
         const response = await axios.get(fileUrl, { responseType: 'stream' });
         const isSuccess = await Promise.race([
-            wait(30 * 1000),
+            wait(3 * 60 * 1000),
             new Promise<number>((resolve, reject) => {
                 response.data.pipe(writer);
                 let error: Error | null = null;
