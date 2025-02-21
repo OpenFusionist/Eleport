@@ -8,7 +8,7 @@ import { mainWindow } from '..';
 export function play() {
 
   const exePath = path.join(GetGameDownloadDir(), 'fusionist.exe'); //GetGameDownloadDir() + "fusionist.exe"// path.join(__dirname, 'your-executable.exe'); 
-
+  mainWindow?.minimize();
   exec(`"${exePath}"`, (error, stdout, stderr) => {
     if (error) {
       console.error(`exec error: ${error}`);
@@ -16,6 +16,5 @@ export function play() {
     }
     console.log(`stdout: ${stdout}`);
     console.error(`stderr: ${stderr}`);
-    mainWindow?.minimize();
   });
 }
