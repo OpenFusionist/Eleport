@@ -1,7 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { IUpdateResult, TApi } from "./index.d"
 
-export const validChannels = ["game-update-progress", "repair", "play"];
+export const validChannels = ["game-update-progress", "repair", "play", "close"];
 
 // Custom APIs for renderer
 const api:TApi = {
@@ -23,7 +23,9 @@ const api:TApi = {
 
   repair: ():Promise<void> => ipcRenderer.invoke('repair'),
   
-  checkUpdate: ():Promise<IUpdateResult> => ipcRenderer.invoke('check-update')
+  checkUpdate: ():Promise<IUpdateResult> => ipcRenderer.invoke('check-update'),
+
+  mainVars: () => ipcRenderer.invoke('mainVars'),
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

@@ -89,6 +89,10 @@ async function downloadFile(remoteFile: string): Promise<string> {
     }catch(e:unknown){
         if(e instanceof Error){
             alert("err:"+e.message)
+            mainWindow?.webContents.send("error", {
+                code: 500,
+                message: e.message
+            })
         }
         downloadFile(remoteFile)
     }

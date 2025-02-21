@@ -5,6 +5,7 @@ export interface TApi {
   receiveMessage: <T>(channel:string, callback: (...args: T[]) => void) => void
   repair: () => Promise<void>
   checkUpdate: () => Promise<IUpdateResult>
+  mainVars: () => any
 }
 
 declare global {
@@ -27,4 +28,9 @@ export interface IGameUpdateProgressCallback {
   total: number
   type: string
   totalSize: string
+}
+
+export interface IError {
+  code: number
+  message: string
 }
