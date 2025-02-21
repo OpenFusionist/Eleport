@@ -2,6 +2,7 @@
 import { exec } from 'child_process';
 import { GetGameDownloadDir } from './../utils';
 import path from 'path';
+import { mainWindow } from '..';
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export function play() {
@@ -15,5 +16,6 @@ export function play() {
     }
     console.log(`stdout: ${stdout}`);
     console.error(`stderr: ${stderr}`);
+    mainWindow?.minimize();
   });
 }
