@@ -23,6 +23,7 @@ nsis:
   createDesktopShortcut: always
   oneClick: false
   allowToChangeInstallationDirectory: true
+  differentialPackage: true
 appImage:
   artifactName: ${name}-${version}.${ext}
 npmRebuild: true
