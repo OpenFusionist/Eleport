@@ -1,59 +1,59 @@
 import { IGameUpdateProgressCallback } from "../../preload/index.d";
 import { bytesToGB, wait } from "./utils";
 
-export const HomeHTML = ():string => {
+// export const HomeHTML = ():string => {
 
-  return `
-    <div class="home">
-      <div class="header">
-        <img id="close" class="close" src="./assets/images/close.png" />
-        <div class="logo">
-          <img src="./assets/images/logo.png" alt="logo" height="63"/>
-        </div>
-      </div>
+//   return `
+//     <div class="home">
+//       <div class="header">
+//         <img id="close" class="close" src="./assets/images/close.png" />
+//         <div class="logo">
+//           <img src="./assets/images/logo.png" alt="logo" height="63"/>
+//         </div>
+//       </div>
 
-      <div class="nav">
-        <div class="nav_item">
-          <a href="">Website</a>
-        </div>
-        <span class="nav_divide"></span>
-        <div class="nav_item">
-          <a href="">Top-up</a>
-        </div>
-        <span class="nav_divide"></span>
-        <div class="nav_item">
-          <a href="">Support</a>
-        </div>
-        <span class="nav_divide"></span>
-        <div class="nav_item">
-          <a href="">JoinDiscord</a>
-        </div>
-      </div>
+//       <div class="nav">
+//         <div class="nav_item">
+//           <a href="">Website</a>
+//         </div>
+//         <span class="nav_divide"></span>
+//         <div class="nav_item">
+//           <a href="">Top-up</a>
+//         </div>
+//         <span class="nav_divide"></span>
+//         <div class="nav_item">
+//           <a href="">Support</a>
+//         </div>
+//         <span class="nav_divide"></span>
+//         <div class="nav_item">
+//           <a href="">JoinDiscord</a>
+//         </div>
+//       </div>
 
-      <div class="footer">
-        <div class="progress_wrapper">
-          <div class="progress_text">
-            <div>Downloading resources...</div>
-            <div class="progress_text_right">
-              <span id="download_progress"></span>
+//       <div class="footer">
+//         <div class="progress_wrapper">
+//           <div class="progress_text">
+//             <div>Downloading resources...</div>
+//             <div class="progress_text_right">
+//               <span id="download_progress"></span>
               
-              <span id="files_progress"></span>
-            </div>
-          </div>
+//               <span id="files_progress"></span>
+//             </div>
+//           </div>
 
-          <div class="progress_main_wrapper">
-            <div class="progress_main">
-              <img id="progress_main_per" class="progress_main_per" style="width: 100%;clip-path: inset(0 100% 0 0)" src="./assets/images/process_2.png" height="32"/>
-            </div>
-          </div>
-        </div>
-        <div class="play_wrapper">
-          <div id="play" class="play_btn_disabled">Play</div>
-        </div>
-      </div>
-    <div>
-  `
-}
+//           <div class="progress_main_wrapper">
+//             <div class="progress_main">
+//               <img id="progress_main_per" class="progress_main_per" style="width: 100%;clip-path: inset(0 100% 0 0)" src="./assets/images/process_2.png" height="32"/>
+//             </div>
+//           </div>
+//         </div>
+//         <div class="play_wrapper">
+//           <div id="play" class="play_btn_disabled">Play</div>
+//         </div>
+//       </div>
+//     <div>
+//   `
+// }
 
 let isLoading = false
 

@@ -1,5 +1,5 @@
 
-export const AppUserModelId = "com.fusionist.eleport"
+export const AppUserModelId = "com.fusionist.game2_launcher"
 
 export const GAME_DOWNLOAD_DIR_NAME = "game"
 

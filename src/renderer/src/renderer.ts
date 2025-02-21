@@ -1,5 +1,5 @@
 // import { IGameUpdateProgressCallback } from "../../preload/index.d";
-import { HomeHTML, initHome } from "./home";
+import {  initHome } from "./home";
 // import { bytesToGB } from "./utils";
 import { init as SentryInit } from "@sentry/electron/renderer";
 import "./../assets/main.css";
@@ -8,7 +8,7 @@ SentryInit({
   dsn: import.meta.env.VITE_SENTRY_DSN,
 });
 
-document.querySelector<HTMLDivElement>('#app')!.innerHTML = HomeHTML()
+// document.querySelector<HTMLDivElement>('#app')!.innerHTML = HomeHTML()
 initHome()
 
 // function initListeners(): void {

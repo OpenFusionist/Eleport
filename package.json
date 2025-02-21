@@ -1,7 +1,7 @@
 {
-  "name": "eleport",
+  "name": "game2_launcher",
   "version": "0.0.1",
-  "description": "",
+  "description": "game2_launcher",
   "main": "./out/main/index.js",
   "author": "example.com",
   "scripts": {

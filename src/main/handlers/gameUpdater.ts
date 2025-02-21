@@ -109,35 +109,36 @@ async function downloadFilesConcurrently(
     let completed = 0;
     let completedSize = 0;
     const total = files.length;
-
-    async function worker(fileList: Fileinfo[]): Promise<void> {
-        for (const file of fileList) {
-
+    const queue = [...files]; // 复制文件列表作为队列
+    const workers: Promise<void>[] = [];
+    
+    async function worker(): Promise<void> {
+        while (queue.length > 0) {
+            const file = queue.shift(); // 从队列获取文件
+            if (!file) break;
+            
             await downloadFile(file.Path || "");
-
+            
             CacheLocalManifestFiles[file.Path || ""] = {
                 Md5: file.Md5,
                 Size: file.Size
-            }
+            };
             completed++;
-            completedSize += file.Size
+            completedSize += file.Size;
+            
             if (progressCallback) {
                 progressCallback(completed, completedSize, total);
             }
         }
     }
-
-    const chunkSize = Math.ceil(total / concurrency);
-    const workers: Promise<void>[] = [];
+    
     for (let i = 0; i < concurrency; i++) {
-        const chunk = files.slice(i * chunkSize, (i + 1) * chunkSize);
-        if (chunk.length > 0) {
-            workers.push(worker(chunk));
-        }
+        workers.push(worker());
     }
     
     await Promise.all(workers);
 }
+
 
 function compareManifests(localManifest: Manifest | null, remoteManifest: Manifest): {
     filesToDownload: Fileinfo[];
