@@ -1,7 +1,7 @@
 
 export const AppUserModelId = "com.fusionist.game2_launcher"
 
-export const GAME_DOWNLOAD_DIR_NAME = "game"
+export const GAME_DOWNLOAD_DIR_NAME = "game2_launcher/game"
 
 export const SELF_UPDATE_SERVER = import.meta.env.MAIN_VITE_SELF_UPDATE_SERVER
 
