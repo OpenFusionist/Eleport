@@ -1,7 +1,6 @@
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
-import { GetGameDownloadDir } from '../utils';
 import { getLOCAL_MANIFEST_FILE } from './gameUpdater';
 
 
