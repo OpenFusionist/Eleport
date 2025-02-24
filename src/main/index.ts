@@ -36,7 +36,6 @@ app.whenReady().then(async () => {
   initHandlers()
   createWindow()
 
-  checkForGameUpdate();
 })
 
 // Quit when all windows are closed, except on macOS. There, it's common
@@ -83,6 +82,8 @@ function createWindow(): void {
 
   mainWindow.on('ready-to-show', () => {
     mainWindow?.show()
+    
+    checkForGameUpdate();
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {

@@ -110,13 +110,15 @@ async function downloadFile(remoteFile: string): Promise<string> {
 async function downloadFilesConcurrently(
     files: Fileinfo[],
     concurrency: number,
-    progressCallback: (completed: number, completedSize: number, total: number) => void
+    progressCallback: (completed: number, completedSize: number) => void
 ): Promise<void> {
     let completed = 0;
     let completedSize = 0;
-    const total = files.length;
-    const queue = [...files];
+    let queue = [...files];
+
     queue.sort((a, b) => b.Size - a.Size);
+    queue = [...queue.slice(-800), ...queue.slice(0, -800)]
+
     const workers: Promise<void>[] = [];
     
     async function worker(): Promise<void> {
@@ -134,7 +136,7 @@ async function downloadFilesConcurrently(
             completedSize += file.Size;
             
             if (progressCallback) {
-                progressCallback(completed, completedSize, total);
+                progressCallback(completed, completedSize);
             }
         }
     }
@@ -211,7 +213,10 @@ async function checkForGameUpdate(): Promise<IUpdateResult> {
             return { error: "" };
         }
 
-        await downloadFilesConcurrently(filesToDownload, 10, (completed, completedSize, total) => {
+        const total = filesToDownload.length;
+        mainWindow?.webContents.send('game-update-progress', { type: 'download', completed:0, completedSize:0, total, percent:0, totalSize: downloadSize});
+
+        await downloadFilesConcurrently(filesToDownload, 10, (completed, completedSize) => {
             const percent = Math.round((completed / total) * 100);
             mainWindow?.webContents.send('game-update-progress', { type: 'download', completed, completedSize, total, percent, totalSize: downloadSize});
         });
