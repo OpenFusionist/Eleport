@@ -1,5 +1,6 @@
 import { IGameUpdateProgressCallback } from "../../preload/index.d";
 import { bytesToGB, wait } from "./utils";
+import PackageJSON from "./../../../package.json"
 
 // export const HomeHTML = ():string => {
 
@@ -64,6 +65,9 @@ export const initHome = ():void => {
   const progress_main_per_elem = document.getElementById("progress_main_per")
   const close_btn = document.getElementById("close")
   const mini_btn = document.getElementById("window-mini")
+  const version_div = document.getElementById("version")
+
+  if(version_div) version_div.innerHTML = "v"+PackageJSON.version
 
   window.api.receiveMessage('game-update-progress', (progressData: IGameUpdateProgressCallback) => {
     if (progressData.type === 'download') {

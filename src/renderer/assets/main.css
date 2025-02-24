@@ -265,3 +265,11 @@ code {
     transform: rotate(360deg);
   }
 }
+
+.version {
+  font-size: 14px;
+  position: absolute;
+  bottom: 0;
+  right: 20px;
+  color: white;
+}
