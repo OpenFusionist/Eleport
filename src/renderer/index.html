@@ -15,6 +15,7 @@
       <div class="home">
         <div class="header">
           <img id="close" class="close" src="./assets/images/close.png" />
+          <img id="window-mini" class="window-mini" src="./assets/images/close.png" />
           <div class="logo">
             <img src="./assets/images/logo.png" alt="logo" height="63"/>
           </div>
@@ -41,7 +42,7 @@
         <div class="footer">
           <div class="progress_wrapper">
             <div class="progress_text">
-              <div>Downloading resources...</div>
+              <div id="progress_text_left">Downloading resources...</div>
               <div class="progress_text_right">
                 <span id="download_progress"></span>
                 
@@ -59,6 +60,9 @@
             <div id="play" class="play_btn_disabled">Play</div>
           </div>
           <img id="repair" class="repair" src="./assets/images/repair.svg"/>
+        </div>
+        <div id="loading" class="loading-overlay">
+          <div class="loading-spinner"></div>
         </div>
       <div>
     </div>

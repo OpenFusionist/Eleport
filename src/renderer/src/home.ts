@@ -63,6 +63,7 @@ export const initHome = ():void => {
   const files_progress_elem = document.getElementById("files_progress")
   const progress_main_per_elem = document.getElementById("progress_main_per")
   const close_btn = document.getElementById("close")
+  const mini_btn = document.getElementById("window-mini")
 
   window.api.receiveMessage('game-update-progress', (progressData: IGameUpdateProgressCallback) => {
     if (progressData.type === 'download') {
@@ -101,12 +102,22 @@ export const initHome = ():void => {
   close_btn?.addEventListener("click", () => {
     window.api.sendMessage('close')
   })
+
+  mini_btn?.addEventListener("click", () => {
+    window.api.sendMessage('window-mini')
+  })
+
+  document.getElementById("repair")?.addEventListener("click", async () => {
+    window.api.repair()
+  })
+
 }
 
 async function loopUpdated():Promise<void> {
   const play_btn = document.getElementById("play")
   const progress_main_per_elem = document.getElementById("progress_main_per")
   const download_progress_elem = document.getElementById("download_progress")
+  const progress_text_left = document.getElementById("progress_text_left")
 
   while (play_btn) {
     if ((await window.api.mainVars()).IsUpdated) {
@@ -116,6 +127,8 @@ async function loopUpdated():Promise<void> {
         progress_main_per_elem.style.clipPath = `inset(0 0 0 0)`
       if (download_progress_elem)
         download_progress_elem.innerText = `Up-to-date`;
+      if (progress_text_left)  
+        progress_text_left.innerText = `Downloaded`;
 
       break ;
     }

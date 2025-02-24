@@ -1,7 +1,23 @@
 import { IError } from "../../preload/index.d";
 
 export function init():void {
-  window.api.receiveMessage('error', (error:IError) => {
-    alert("error: "+ error.message + "["+error.code+"]")
-  })
+  window.addEventListener('DOMContentLoaded', () => {
+    window.api.receiveMessage('error', (error:IError) => {
+      alert("error: "+ error.message + "["+error.code+"]")
+    })
+    window.api.receiveMessage('show-loading', () => {
+      const loadingElement = document.getElementById("loading");
+      if (loadingElement) {
+        loadingElement.style.display = "flex";
+      }
+    });
+
+    window.api.receiveMessage('hide-loading', () => {
+      const loadingElement = document.getElementById("loading");
+      if (loadingElement) {
+        loadingElement.style.display = "none";
+      }
+    });
+  });
+
 }

@@ -3,12 +3,14 @@ import {  initHome } from "./home";
 // import { bytesToGB } from "./utils";
 import { init as SentryInit } from "@sentry/electron/renderer";
 import "./../assets/main.css";
+import { init } from "./init";
 
 SentryInit({
   dsn: import.meta.env.VITE_SENTRY_DSN,
 });
 
 // document.querySelector<HTMLDivElement>('#app')!.innerHTML = HomeHTML()
+init()
 initHome()
 
 // function initListeners(): void {

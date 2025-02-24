@@ -73,7 +73,7 @@ async function downloadFile(remoteFile: string): Promise<string> {
     try{
         const response = await axios.get(fileUrl, { responseType: 'stream' });
         const isSuccess = await Promise.race([
-            wait(3 * 60 * 1000),
+            wait(10 * 60 * 1000),
             new Promise<number>((resolve, reject) => {
                 response.data.pipe(writer);
                 let error: Error | null = null;
@@ -115,12 +115,13 @@ async function downloadFilesConcurrently(
     let completed = 0;
     let completedSize = 0;
     const total = files.length;
-    const queue = [...files]; // 复制文件列表作为队列
+    const queue = [...files];
+    queue.sort((a, b) => b.Size - a.Size);
     const workers: Promise<void>[] = [];
     
     async function worker(): Promise<void> {
         while (queue.length > 0) {
-            const file = queue.shift(); // 从队列获取文件
+            const file = queue.shift();
             if (!file) break;
             
             await downloadFile(file.Path || "");
