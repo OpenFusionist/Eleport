@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
+import { GetGameDownloadDir } from '../utils';
 
 
 interface FileData {
@@ -69,7 +70,7 @@ export const generateManifest = async (folderPath: string): Promise<void> => {
         }
 
   
-        const manifestPath = path.join(folderPath, 'manifest.json');
+        const manifestPath = path.join(GetGameDownloadDir(), 'manifest.json');
         await fs.promises.writeFile(manifestPath, JSON.stringify(manifest, null, 4));
 
         console.log('Manifest gen');
