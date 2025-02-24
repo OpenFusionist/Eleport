@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import { GetGameDownloadDir } from '../utils';
+import { getLOCAL_MANIFEST_FILE } from './gameUpdater';
 
 
 interface FileData {
@@ -70,7 +71,7 @@ export const generateManifest = async (folderPath: string): Promise<void> => {
         }
 
   
-        const manifestPath = path.join(GetGameDownloadDir(), 'manifest.json');
+        const manifestPath = getLOCAL_MANIFEST_FILE()
         await fs.promises.writeFile(manifestPath, JSON.stringify(manifest, null, 4));
 
         console.log('Manifest gen');
@@ -78,4 +79,3 @@ export const generateManifest = async (folderPath: string): Promise<void> => {
         console.error('Error generating manifest:', err);
     }
 };
-

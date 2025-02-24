@@ -27,7 +27,7 @@ interface Manifest {
 
 export let CacheLocalManifestFiles: {[key: string]: Fileinfo} = {}
 
-function getLOCAL_MANIFEST_FILE(): string {
+export function getLOCAL_MANIFEST_FILE(): string {
     return path.join(GetGameDownloadDir(), 'manifest.json');
 }
 
@@ -204,6 +204,7 @@ async function checkForGameUpdate(): Promise<IUpdateResult> {
         CacheLocalManifestFiles = localManifest.Files
 
         for (const filePath of filesToDelete) {
+            if(filePath === "manifest.json") continue
             deleteFile(filePath);
             delete CacheLocalManifestFiles[filePath]
             mainWindow?.webContents.send('game-update-progress', { type: 'delete', file: filePath });
