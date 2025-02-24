@@ -68,6 +68,12 @@ export const initHome = ():void => {
   const version_div = document.getElementById("version")
 
   if(version_div) version_div.innerHTML = "v"+PackageJSON.version
+  
+  window.api.version().then((vv) => {
+    if(version_div) version_div.innerHTML = vv + "&nbsp;&nbsp;" + version_div.innerHTML
+  })
+  
+  
 
   window.api.receiveMessage('game-update-progress', (progressData: IGameUpdateProgressCallback) => {
     if (progressData.type === 'download') {
@@ -75,10 +81,10 @@ export const initHome = ():void => {
       //   ${progressData.percent}% | Download progress:${progressData.completed} / ${progressData.total} file | TotalSize: ${bytesToGB(progressData.totalSize)} GB | CompletedSize: ${bytesToGB(progressData.completedSize)} GB
       //   `)
       if (download_progress_elem)
-        download_progress_elem.innerText = `${bytesToGB(progressData.completedSize)} GB / ${bytesToGB(progressData.totalSize)} GB`;
+        download_progress_elem.innerText = `${bytesToGB(progressData.completedSize)}/${bytesToGB(progressData.totalSize)} GB`;
       
       if (files_progress_elem)
-        files_progress_elem.innerHTML = `${progressData.completed} / ${progressData.total} Files`
+        files_progress_elem.innerHTML = `${progressData.completed}/${progressData.total} Files`
 
       if (progress_main_per_elem)
         progress_main_per_elem.style.clipPath = `inset(0 ${100 - progressData.percent}% 0 0)`

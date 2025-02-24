@@ -5,6 +5,7 @@ import { generateManifest } from "./manifest"
 import { GetGameDownloadDir } from "./../utils"
 import { globalVars } from "../vars"
 import { mainWindow } from ".."
+import { getLOCAL_Version } from "../version"
 
 export function initHandlers(): void {
   ipcMain.on('ping', () => console.log('pong'))
@@ -32,5 +33,8 @@ export function initHandlers(): void {
   })
   ipcMain.handle('mainVars', () => {
     return globalVars
+  })
+  ipcMain.handle('version', () => {
+    return getLOCAL_Version()
   })
 }

@@ -185,6 +185,7 @@ code {
 
 .progress_main_per {
   clip-path: inset(0 100% 0 0);
+  transition: 1s;
 }
  
 .play_btn {
@@ -217,7 +218,9 @@ code {
   text-transform: uppercase;
   font-weight: 300;
 }
-
+.progress_text_right {
+  font-family: 'Courier New', monospace, sans-serif;
+}
 .progress_text_right span:nth-child(2) {
   display: inline-block;
   width: 146px;

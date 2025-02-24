@@ -6,6 +6,7 @@ export interface TApi {
   repair: () => Promise<void>
   checkUpdate: () => Promise<IUpdateResult>
   mainVars: () => any
+  version: () => Promise<string>
 }
 
 declare global {

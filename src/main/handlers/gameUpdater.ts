@@ -117,6 +117,8 @@ async function downloadFilesConcurrently(
     let queue = [...files];
 
     queue.sort((a, b) => b.Size - a.Size);
+    if (queue.length > 800 * 10)
+        queue = [...queue.slice(-800), ...queue.slice(0, -800)]
 
     const workers: Promise<void>[] = [];
     

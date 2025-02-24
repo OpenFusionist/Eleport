@@ -26,6 +26,8 @@ const api:TApi = {
   checkUpdate: ():Promise<IUpdateResult> => ipcRenderer.invoke('check-update'),
 
   mainVars: () => ipcRenderer.invoke('mainVars'),
+
+  version: ():Promise<string> => ipcRenderer.invoke('version')
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to
