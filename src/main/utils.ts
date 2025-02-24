@@ -8,7 +8,11 @@ export function GetResourceDir(): string {
   let resourcePath
   
   if (app.isPackaged) {
-    resourcePath = path.join(app.getAppPath(), "../");
+    if(isInstalledOnSystemDrive()){
+      resourcePath = app.getPath('userData');
+    }else{
+      resourcePath = path.join(app.getAppPath(), "../");
+    }
   } else {
     resourcePath = path.join(__dirname, '../../../');
   }
@@ -41,4 +45,11 @@ export function getProcessList():Promise<string> {
       resolve(stdout);
     });
   });
+}
+
+export function isInstalledOnSystemDrive() {
+  const exePath = app.getPath('exe');
+  const systemDrive = process.env.SystemDrive || "C:";
+  
+  return exePath.toLowerCase().startsWith(systemDrive.toLowerCase());
 }
