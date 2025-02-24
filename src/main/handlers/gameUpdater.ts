@@ -117,14 +117,12 @@ async function downloadFilesConcurrently(
     let queue = [...files];
 
     queue.sort((a, b) => b.Size - a.Size);
-    if (queue.length > 800 * 10)
-        queue = [...queue.slice(-800), ...queue.slice(0, -800)]
 
     const workers: Promise<void>[] = [];
     
-    async function worker(): Promise<void> {
+    async function worker(isShift): Promise<void> {
         while (queue.length > 0) {
-            const file = queue.shift();
+            const file = isShift?queue.shift():queue.pop()
             if (!file) break;
             
             await downloadFile(file.Path || "");
@@ -143,7 +141,10 @@ async function downloadFilesConcurrently(
     }
     
     for (let i = 0; i < concurrency; i++) {
-        workers.push(worker());
+        let isShift = true;
+        if (i <= 1) isShift = false
+
+        workers.push(worker(isShift));
     }
     
     await Promise.all(workers);
