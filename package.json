@@ -1,6 +1,6 @@
 {
   "name": "game2_launcher",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "description": "game2_launcher",
   "main": "./out/main/index.js",
   "author": "example.com",
