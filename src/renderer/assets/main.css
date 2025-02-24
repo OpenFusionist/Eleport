@@ -55,8 +55,8 @@ code {
 .close {
   -webkit-app-region: no-drag;
   position: absolute;
-  right: 0;
-  top: 0;
+  right: 5px;
+  top: 5px;
   cursor: pointer;
   z-index: 20;
   opacity: 0.8;
@@ -68,8 +68,8 @@ code {
 .window-mini {
   -webkit-app-region: no-drag;
   position: absolute;
-  right: 50px;
-  top: 0;
+  right: 55px;
+  top: 5px;
   cursor: pointer;
   z-index: 20;
   opacity: 0.8;

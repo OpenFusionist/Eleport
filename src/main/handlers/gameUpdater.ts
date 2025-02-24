@@ -62,18 +62,21 @@ function ensureDirExist(filePath: string): void {
 }
 
 
-async function downloadFile(remoteFile: string): Promise<string> {
+async function downloadFile(remoteFile: string, Filesize: number): Promise<string> {
     const GAME_DIR = GetGameDownloadDir()
     const fileUrl = `${UPDATE_SERVER_URL}/${remoteFile}`;
     const localPath = path.join(GAME_DIR, remoteFile);
     ensureDirExist(localPath);
+
+    let waitSec = Math.ceil(Filesize/307200) 
+    waitSec = waitSec < 10? 10:waitSec;
 
     const writer = fs.createWriteStream(localPath);
 
     try{
         const response = await axios.get(fileUrl, { responseType: 'stream' });
         const isSuccess = await Promise.race([
-            wait(10 * 60 * 1000),
+            wait(waitSec * 1000),
             new Promise<number>((resolve, reject) => {
                 response.data.pipe(writer);
                 let error: Error | null = null;
@@ -91,7 +94,7 @@ async function downloadFile(remoteFile: string): Promise<string> {
         ]);
 
         if(isSuccess !== 1){
-            return await downloadFile(remoteFile)
+            return await downloadFile(remoteFile, Filesize)
         }
     }catch(e:unknown){
         if(e instanceof Error){
@@ -101,7 +104,7 @@ async function downloadFile(remoteFile: string): Promise<string> {
             })
         }
         await wait(1000)
-        return await downloadFile(remoteFile)
+        return await downloadFile(remoteFile, Filesize)
     }
    
     return localPath;
@@ -127,7 +130,7 @@ async function downloadFilesConcurrently(
             const file = isShift?queue.shift():queue.pop()
             if (!file) break;
             
-            await downloadFile(file.Path || "");
+            await downloadFile(file.Path || "", file.Size);
             
             CacheLocalManifestFiles[file.Path || ""] = {
                 Md5: file.Md5,
