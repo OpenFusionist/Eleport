@@ -9,57 +9,67 @@ import { CacheLocalManifestFiles, checkForGameUpdate, writeLocalManifest } from 
 import { globalVars } from './vars'
 // import { init as SentryInit } from "@sentry/electron/main";
 
-
 export let mainWindow:BrowserWindow | undefined
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
-app.whenReady().then(async () => {
-  // Default open or close DevTools by F12 in development
-  // and ignore CommandOrControl + R in production.
-  // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
-  app.on('browser-window-created', (_, window) => {
-    optimizer.watchWindowShortcuts(window)
+const gotTheLock = app.requestSingleInstanceLock();
+if (!gotTheLock) {
+  app.quit();
+}else{
+  app.on('second-instance', () => {
+      if (mainWindow) {
+          if (mainWindow.isMinimized()) mainWindow.restore();
+          mainWindow.focus();
+      }
+  });
+  // This method will be called when Electron has finished
+  // initialization and is ready to create browser windows.
+  // Some APIs can only be used after this event occurs.
+  app.whenReady().then(async () => {
+    // Default open or close DevTools by F12 in development
+    // and ignore CommandOrControl + R in production.
+    // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
+    app.on('browser-window-created', (_, window) => {
+      optimizer.watchWindowShortcuts(window)
+    })
+
+    app.on('activate', function () {
+      // On macOS it's common to re-create a window in the app when the
+      // dock icon is clicked and there are no other windows open.
+      if (BrowserWindow.getAllWindows().length === 0) createWindow()
+    })
+
+    
+    // Set app user model id for windows
+    electronApp.setAppUserModelId(AppUserModelId)
+    initSelfUpdater()
+    initHandlers()
+    createWindow()
+
   })
 
-  app.on('activate', function () {
-    // On macOS it's common to re-create a window in the app when the
-    // dock icon is clicked and there are no other windows open.
-    if (BrowserWindow.getAllWindows().length === 0) createWindow()
-  })
-
-  
-  // Set app user model id for windows
-  electronApp.setAppUserModelId(AppUserModelId)
-  initSelfUpdater()
-  initHandlers()
-  createWindow()
-
-})
-
-// Quit when all windows are closed, except on macOS. There, it's common
-// for applications and their menu bar to stay active until the user quits
-// explicitly with Cmd + Q.
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit()
-  }
-})
-
-app.on('before-quit', async (event) => {
-  if (!globalVars.IsUpdated) {
-    event.preventDefault()
-    const Manifest = {
-      Total: 0,
-      Files: CacheLocalManifestFiles
+  // Quit when all windows are closed, except on macOS. There, it's common
+  // for applications and their menu bar to stay active until the user quits
+  // explicitly with Cmd + Q.
+  app.on('window-all-closed', () => {
+    if (process.platform !== 'darwin') {
+      app.quit()
     }
-    await writeLocalManifest(Manifest)
-    globalVars.IsUpdated = true
-    console.log('before-quit save success!')
-    app.quit()
-  }
-})
+  })
+
+  app.on('before-quit', async (event) => {
+    if (!globalVars.IsUpdated) {
+      event.preventDefault()
+      const Manifest = {
+        Total: 0,
+        Files: CacheLocalManifestFiles
+      }
+      await writeLocalManifest(Manifest)
+      globalVars.IsUpdated = true
+      console.log('before-quit save success!')
+      app.quit()
+    }
+  })
+}
 
 
 function createWindow(): void {
