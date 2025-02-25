@@ -20,11 +20,14 @@ export function init():void {
       }
     });
 
-    window.api.receiveMessage('game-runing', (isRuning: boolean) => {
+    window.api.receiveMessage('game-runing', async (isRuning: boolean) => {
       if(isRuning){
         disablePlayBtn()
       }else{
-        enablePlayBtn()
+        if((await window.api.mainVars()).IsUpdated) 
+          enablePlayBtn()
+        else
+          disablePlayBtn()
       }
     })
   });
