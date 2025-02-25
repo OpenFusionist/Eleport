@@ -120,8 +120,8 @@ async function downloadFilesConcurrently(
     let queue = [...files];
 
     queue.sort((a, b) => b.Size - a.Size);
-    if (queue.length > 800 * 10)
-        queue = [...queue.slice(-800), ...queue.slice(0, -800)]
+    // if (queue.length > 800 * 10)
+    //     queue = [...queue.slice(-800), ...queue.slice(0, -800)]
 
     const workers: Promise<void>[] = [];
     
@@ -225,7 +225,7 @@ async function checkForGameUpdate(): Promise<IUpdateResult> {
         mainWindow?.webContents.send('game-update-progress', { type: 'download', completed:0, completedSize:0, total, percent:0, totalSize: downloadSize});
 
         await downloadFilesConcurrently(filesToDownload, 10, (completed, completedSize) => {
-            const percent = Math.round((completed / total) * 100);
+            const percent = Math.round((completedSize / downloadSize) * 100);
             mainWindow?.webContents.send('game-update-progress', { type: 'download', completed, completedSize, total, percent, totalSize: downloadSize});
         });
 
