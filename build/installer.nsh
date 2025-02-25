@@ -5,3 +5,7 @@
         RMDir /r $INSTDIR
     ${endIf}
 !macroend
+
+!macro customHeader
+   RequestExecutionLevel admin
+!macroend

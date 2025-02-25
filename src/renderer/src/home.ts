@@ -65,15 +65,8 @@ export const initHome = ():void => {
   const progress_main_per_elem = document.getElementById("progress_main_per")
   const close_btn = document.getElementById("close")
   const mini_btn = document.getElementById("window-mini")
-  const version_div = document.getElementById("version")
 
-  if(version_div) version_div.innerHTML = "v"+PackageJSON.version
-  
-  window.api.version().then((vv) => {
-    if(version_div) version_div.innerHTML = vv + "&nbsp;&nbsp;" + version_div.innerHTML
-  })
-  
-  
+  updateVersion()
 
   window.api.receiveMessage('game-update-progress', (progressData: IGameUpdateProgressCallback) => {
     if (progressData.type === 'download') {
@@ -140,8 +133,21 @@ async function loopUpdated():Promise<void> {
       if (progress_text_left)  
         progress_text_left.innerText = `Downloaded`;
 
+      updateVersion()
+
       break ;
     }
     await wait(1000)
   }
+}
+
+export function updateVersion() {
+  const version_div = document.getElementById("version")
+  if(!version_div)  return
+  
+  window.api.version().then((vv) => {
+    version_div.innerHTML = "Launcher: v"+PackageJSON.version
+    if(vv)
+      version_div.innerHTML = "Game: " + vv + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + version_div.innerHTML
+  })
 }

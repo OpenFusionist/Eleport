@@ -1,5 +1,5 @@
-appId: com.fusionist.game2_launcher
-productName: game2_launcher
+appId: com.fusionist.fusionist_launcher
+productName: Fusionist Launcher
 directories:
   buildResources: build
 files:
@@ -13,7 +13,7 @@ asarUnpack:
   - resources/**
   - "**/*.node"
 win:
-  executableName: game2_launcher
+  executableName: Fusionist Launcher
   publish: 
     - provider: github
       protocol: https
@@ -24,6 +24,7 @@ nsis:
   createDesktopShortcut: always
   oneClick: false
   allowToChangeInstallationDirectory: true
+  allowElevation: true
   differentialPackage: true
   perMachine: true
   deleteAppDataOnUninstall: true
