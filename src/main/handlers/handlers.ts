@@ -6,6 +6,7 @@ import { GetGameDownloadDir } from "./../utils"
 import { globalVars } from "../vars"
 import { mainWindow } from ".."
 import { getLOCAL_Version } from "../version"
+import { windowFocus } from "./focus"
 
 export function initHandlers(): void {
   ipcMain.on('ping', () => console.log('pong'))
@@ -14,6 +15,7 @@ export function initHandlers(): void {
   ipcMain.on('window-mini',() => {
     mainWindow?.minimize();
   })
+  ipcMain.on('window-focus', windowFocus)
 
   ipcMain.handle('check-update', checkForGameUpdate) // download game2
   ipcMain.handle('repair', async () => {

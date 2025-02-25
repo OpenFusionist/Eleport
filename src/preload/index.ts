@@ -1,7 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { IUpdateResult, TApi } from "./index.d"
 
-export const validChannels = ["game-update-progress", "repair", "play", "close", "show-loading", "hide-loading", "window-mini"];
+export const validChannels = ["game-update-progress", "repair", "play", "close", "show-loading", "hide-loading", "window-mini", "window-focus", "game-runing"];
 
 // Custom APIs for renderer
 const api:TApi = {

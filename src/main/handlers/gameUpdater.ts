@@ -3,7 +3,7 @@ import axios from 'axios';
 import fs from 'fs';
 import path from 'path';
 import { GetGameDownloadDir, wait } from './../utils';
-import { UPDATE_SERVER_URL } from './../configs';
+import { TIMEOUT_MS, UPDATE_SERVER_URL } from './../configs';
 import { mainWindow } from '../.';
 import { IUpdateResult } from '../../preload/index.d';
 import { globalVars } from './../vars';
@@ -68,41 +68,43 @@ async function downloadFile(remoteFile: string, Filesize: number): Promise<strin
     const localPath = path.join(GAME_DIR, remoteFile);
     ensureDirExist(localPath);
 
-    let waitSec = Math.ceil(Filesize/307200) 
-    waitSec = waitSec < 10? 10:waitSec;
-
     const writer = fs.createWriteStream(localPath);
-
     try{
-        const response = await axios.get(fileUrl, { responseType: 'stream' });
-        const isSuccess = await Promise.race([
-            wait(waitSec * 1000),
-            new Promise<number>((resolve, reject) => {
-                response.data.pipe(writer);
-                let error: Error | null = null;
-                writer.on('error', (err: Error) => {
-                    error = err;
-                    writer.close();
-                    reject(err);
-                });
-                writer.on('close', () => {
-                    if (!error) {
-                        resolve(1);
-                    }
-                });
-            })
-        ]);
+        const response = await axios.get(fileUrl, { responseType: 'stream', timeout: TIMEOUT_MS });
 
-        if(isSuccess !== 1){
-            return await downloadFile(remoteFile, Filesize)
-        }
+        await new Promise((resolve, reject) => {
+            let cacheTotalBytesWritten = -1;
+            let totalBytesWritten = 0;
+
+            const timer = setInterval(() => {
+                if(cacheTotalBytesWritten === totalBytesWritten) {
+                    clearInterval(timer)
+                    reject("error")
+                }
+                cacheTotalBytesWritten = totalBytesWritten
+            }, TIMEOUT_MS)
+
+            response.data.on('data', (chunk) => {  
+                totalBytesWritten += chunk.length;
+                // console.log(`${remoteFile}: Writing chunk of ${chunk.length} bytes... Total written: ${totalBytesWritten} bytes`);
+                writer.write(chunk);
+            });
+            
+            response.data.on('end', () => {
+                // console.log('File writing completed!');
+                writer.end();
+                clearInterval(timer)
+                resolve(1);
+            });
+    
+            writer.on('error', (err: Error) => {
+                writer.end();
+                clearInterval(timer)
+                reject(err)
+            });
+        })
+
     }catch(e:unknown){
-        if(e instanceof Error){
-            mainWindow?.webContents.send("error", {
-                code: 500,
-                message: e.message
-            })
-        }
         await wait(1000)
         return await downloadFile(remoteFile, Filesize)
     }
@@ -166,6 +168,9 @@ function compareManifests(localManifest: Manifest | null, remoteManifest: Manife
     let downloadSize = 0;
 
     for (const filePath in remoteManifest.Files) {
+        if(filePath.toLowerCase() === "manifest.json"){
+            continue
+        }
         const _fileinfo = remoteManifest.Files[filePath]
         _fileinfo.Path = filePath
 
@@ -184,6 +189,9 @@ function compareManifests(localManifest: Manifest | null, remoteManifest: Manife
     }
 
     for (const filePath in localManifest?.Files) {
+        if(filePath.toLowerCase() === "manifest.json"){
+            continue
+        }
         if (!remoteManifest.Files[filePath]) {
             filesToDelete.push(filePath);
         }
@@ -208,9 +216,7 @@ async function checkForGameUpdate(): Promise<IUpdateResult> {
 
         const { filesToDownload, filesToDelete, downloadSize } = compareManifests(localManifest, remoteManifest);
         CacheLocalManifestFiles = localManifest.Files
-
         for (const filePath of filesToDelete) {
-            if(filePath === "manifest.json") continue
             deleteFile(filePath);
             delete CacheLocalManifestFiles[filePath]
             mainWindow?.webContents.send('game-update-progress', { type: 'delete', file: filePath });

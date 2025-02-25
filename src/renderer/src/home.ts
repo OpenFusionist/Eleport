@@ -56,8 +56,6 @@ import PackageJSON from "./../../../package.json"
 //   `
 // }
 
-let isLoading = false
-
 export const initHome = ():void => {
   loopUpdated()
   const download_progress_elem = document.getElementById("download_progress")
@@ -88,17 +86,10 @@ export const initHome = ():void => {
   
   document.getElementById("play")?.addEventListener("click", async () => {
     const play_btn = document.getElementById("play")
-    if (!play_btn) return
-    if((await window.api.mainVars()).IsUpdated && !isLoading) {
-      isLoading = true
-      play_btn.innerHTML = "Loading"
+    if (!play_btn || play_btn?.classList.contains("play_btn_disabled")) return
+    if((await window.api.mainVars()).IsUpdated) {
+      disablePlayBtn()
       window.api.sendMessage('play')
-
-      setTimeout(() => {
-        isLoading = false
-        play_btn.innerHTML = "Play"
-      }, 10 * 1000)
-
     }
   })
 
@@ -134,7 +125,7 @@ async function loopUpdated():Promise<void> {
         progress_text_left.innerText = `Downloaded`;
 
       updateVersion()
-
+      window.api.sendMessage('window-focus')
       break ;
     }
     await wait(1000)
@@ -150,4 +141,15 @@ export function updateVersion() {
     if(vv)
       version_div.innerHTML = "Game: " + vv + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + version_div.innerHTML
   })
+}
+
+export function disablePlayBtn() {
+  const play_btn = document.getElementById("play")
+  play_btn?.classList.remove("play_btn")
+  play_btn?.classList.add("play_btn_disabled")
+}
+export function enablePlayBtn() {
+  const play_btn = document.getElementById("play")
+  play_btn?.classList.remove("play_btn_disabled")
+  play_btn?.classList.add("play_btn")
 }

@@ -1,4 +1,5 @@
 import { IError } from "../../preload/index.d";
+import { disablePlayBtn, enablePlayBtn } from "./home";
 
 export function init():void {
   window.addEventListener('DOMContentLoaded', () => {
@@ -18,6 +19,14 @@ export function init():void {
         loadingElement.style.display = "none";
       }
     });
+
+    window.api.receiveMessage('game-runing', (isRuning: boolean) => {
+      if(isRuning){
+        disablePlayBtn()
+      }else{
+        enablePlayBtn()
+      }
+    })
   });
 
 }

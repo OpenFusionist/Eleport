@@ -7,6 +7,8 @@ import { AppUserModelId } from './configs'
 import { initHandlers } from './handlers/handlers'
 import { CacheLocalManifestFiles, checkForGameUpdate, writeLocalManifest } from './handlers/gameUpdater'
 import { globalVars } from './vars'
+import { windowFocus } from './handlers/focus'
+import { initSender } from './sender'
 // import { init as SentryInit } from "@sentry/electron/main";
 
 export let mainWindow:BrowserWindow | undefined
@@ -16,10 +18,7 @@ if (!gotTheLock) {
   app.quit();
 }else{
   app.on('second-instance', () => {
-      if (mainWindow) {
-          if (mainWindow.isMinimized()) mainWindow.restore();
-          mainWindow.focus();
-      }
+    windowFocus()
   });
   // This method will be called when Electron has finished
   // initialization and is ready to create browser windows.
@@ -95,6 +94,7 @@ function createWindow(): void {
     
     checkForGameUpdate();
   })
+  initSender(mainWindow)
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
     // Open url with external browser
