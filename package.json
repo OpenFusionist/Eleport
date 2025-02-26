@@ -1,6 +1,6 @@
 {
   "name": "fusionist_launcher",
-  "version": "0.0.24",
+  "version": "0.0.25",
   "description": "Fusionist Launcher",
   "main": "./out/main/index.js",
   "author": "fusionist.io",
@@ -22,23 +22,23 @@
   },
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.1",
-    "@electron-toolkit/utils": "^3.0.0",
+    "@electron-toolkit/utils": "^4.0.0",
     "@sentry/electron": "^5.11.0",
     "axios": "^1.7.9",
     "electron-updater": "^6.3.9",
     "update-electron-app": "^3.1.1"
   },
   "devDependencies": {
-    "@electron-toolkit/eslint-config-prettier": "^2.0.0",
-    "@electron-toolkit/eslint-config-ts": "^2.0.0",
+    "@electron-toolkit/eslint-config-prettier": "^3.0.0",
+    "@electron-toolkit/eslint-config-ts": "^3.0.0",
     "@electron-toolkit/tsconfig": "^1.0.1",
-    "@types/node": "^20.14.8",
-    "electron": "^31.0.2",
-    "electron-builder": "^26.0.6",
-    "electron-vite": "^2.3.0",
-    "eslint": "^8.57.0",
-    "prettier": "^3.3.2",
-    "typescript": "^5.5.2",
-    "vite": "^5.3.1"
+    "@types/node": "^22.13.4",
+    "electron": "^34.2.0",
+    "electron-builder": "^25.1.8",
+    "electron-vite": "^3.0.0",
+    "eslint": "^9.20.1",
+    "prettier": "^3.5.1",
+    "typescript": "^5.7.3",
+    "vite": "^6.1.0"
   }
 }
