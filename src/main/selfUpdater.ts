@@ -36,8 +36,8 @@ export function initSelfUpdater(): void {
     console.log('update-downloaded:', info);
     dialog.showMessageBox({
       type: "info",
-      title: "update completed",
-      message: "The new version has been downloaded, the application will automatically restart and install the update.",
+      title: "[Fusionist Launcher] Update Ready to Install!",
+      message: "The latest version of the launcher has been downloaded successfully. The app will now restart to apply the update.",
     }).then(() => {
       autoUpdater.quitAndInstall(true, true);
     });
