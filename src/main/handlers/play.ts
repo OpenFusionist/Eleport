@@ -4,6 +4,7 @@ import { GetGameDownloadDir, getProcessList } from './../utils';
 import path from 'path';
 import { mainWindow } from '..';
 
+import * as Sentry from "@sentry/electron/main";
 import { GAME_PROCESS_NAME } from '../configs';
 import { dialog } from 'electron';
 
@@ -25,6 +26,7 @@ export async function play() {
   mainWindow?.minimize();
   exec(`"${exePath}"`, (error, stdout, stderr) => {
     if (error) {
+      Sentry.captureException(error);
       console.error(`exec error: ${error}`);
       return;
     }

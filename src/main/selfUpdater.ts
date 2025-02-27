@@ -1,7 +1,7 @@
 import { dialog } from "electron";
 import { SELF_UPDATE_SERVER } from "./configs";
 import { autoUpdater } from 'electron-updater'
-
+import * as Sentry from "@sentry/electron/main";
 
 export function initSelfUpdater(): void {
   const feedURL = SELF_UPDATE_SERVER
@@ -24,6 +24,7 @@ export function initSelfUpdater(): void {
   });
 
   autoUpdater.on('error', (err) => {
+    Sentry.captureException(err);
     console.error('update error:', err);
   });
 

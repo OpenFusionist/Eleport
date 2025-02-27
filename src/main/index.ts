@@ -9,7 +9,11 @@ import { CacheLocalManifestFiles, checkForGameUpdate, writeLocalManifest } from 
 import { globalVars } from './vars'
 import { windowFocus } from './handlers/focus'
 import { initSender } from './sender'
-// import { init as SentryInit } from "@sentry/electron/main";
+import * as Sentry from "@sentry/electron/main";
+
+Sentry.init({
+  dsn: import.meta.env.VITE_SENTRY_DSN,
+});
 
 export let mainWindow:BrowserWindow | undefined
 

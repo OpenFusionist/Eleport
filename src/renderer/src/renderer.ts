@@ -1,12 +1,17 @@
 // import { IGameUpdateProgressCallback } from "../../preload/index.d";
 import {  initHome } from "./home";
 // import { bytesToGB } from "./utils";
-import { init as SentryInit } from "@sentry/electron/renderer";
+import * as Sentry from "@sentry/electron/renderer";
 import "./../assets/main.css";
 import { init } from "./init";
 
-SentryInit({
-  dsn: import.meta.env.VITE_SENTRY_DSN,
+Sentry.init({
+  integrations: [
+  ],
+  // Learn more at
+  // https://docs.sentry.io/platforms/javascript/session-replay/configuration/#general-integration-configuration
+  // replaysSessionSampleRate: 0.1,
+  // replaysOnErrorSampleRate: 1.0,
 });
 
 // document.querySelector<HTMLDivElement>('#app')!.innerHTML = HomeHTML()

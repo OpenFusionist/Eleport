@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import { getLOCAL_MANIFEST_FILE } from './gameUpdater';
-
+import * as Sentry from "@sentry/electron/main";
 
 interface FileData {
     Size: number;
@@ -55,6 +55,7 @@ const scanDirectory = async (dirPath: string, gamePath: string): Promise<void> =
             }
         }
     } catch (err) {
+        Sentry.captureException(err);
         console.error('Error reading directory:', err);
     }
 };
@@ -75,6 +76,7 @@ export const generateManifest = async (folderPath: string): Promise<void> => {
 
         console.log('Manifest gen');
     } catch (err) {
+        Sentry.captureException(err);
         console.error('Error generating manifest:', err);
     }
 };

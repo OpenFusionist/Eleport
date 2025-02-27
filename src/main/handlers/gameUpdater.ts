@@ -7,7 +7,7 @@ import { TIMEOUT_MS, UPDATE_SERVER_URL } from './../configs';
 import { mainWindow } from '../.';
 import { IUpdateResult } from '../../preload/index.d';
 import { globalVars } from './../vars';
-
+import * as Sentry from "@sentry/electron/main";
 // interface RemoteFile {
 //     path: string;
 //     checksum: string;
@@ -39,6 +39,7 @@ function readLocalManifest(): Manifest {
         try {
             return JSON.parse(fs.readFileSync(LOCAL_MANIFEST_FILE, 'utf8')) as Manifest;
         } catch (e) {
+            Sentry.captureException(e);
             console.error('read manifest error:', e);
             return emptyManifest
         }
@@ -105,6 +106,7 @@ async function downloadFile(remoteFile: string, Filesize: number): Promise<strin
         })
 
     }catch(e:unknown){
+        Sentry.captureException(e);
         await wait(1000)
         return await downloadFile(remoteFile, Filesize)
     }
@@ -240,6 +242,7 @@ async function checkForGameUpdate(): Promise<IUpdateResult> {
         globalVars.IsUpdated = true;
         return { error: "" };
     } catch (error: unknown) {
+        Sentry.captureException(error);
         console.error('update fail:', error);
         let err_msg = "500"
         if (error instanceof Error) {
