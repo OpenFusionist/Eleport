@@ -23,29 +23,45 @@
 6. **No UI Freezes During Downloads.**  
    It may sound silly, but some other launchers [freeze the UI](https://x.com/charles_print/status/1889615989404475547) when downloading. Eleport was partly born to fix that very issue.
 
+## Get started
 
-## Project Setup
+### Preparation
 
-### Install
+1. **Define your `.env` file**  
+Rename the `.env.example` file to `.env` in your project directory.
 
+2. **Generate `manifest.json` for your game**  
+Before uploading your game, you need to generate a `manifest.json` file. Place the `manifest_gen.exe` file from the `extra/manifest_gen/` directory in the same directory as your game and run it. This will generate the `manifest.json` file for your game.
+
+3. **Add a version file (optional)**  
+To display the version number on the launcher, you can create a `version` file in the game directory and input the relevant version number.
+
+4. **Prepare game files**  
+Upload your game files to your server or storage bucket. Once uploaded, obtain the download URL and add it to the `MAIN_VITE_UPDATE_SERVER_URL` field in your `.env` file.
+ 
+### Project Setup
+
+#### Install
+Install the necessary dependencies using:
 ```bash
 $ pnpm install
 ```
 
-### Development
-
+#### Development
+To start the development server, run:
 ```bash
 $ pnpm dev
 ```
 
-### Build
-
+#### Build
+To build the project for Windows:
 ```bash
 $ pnpm build:win
 ```
 
-### Publish
-
+#### Publish
+To publish the build, use the following command:
 ```bash
 $ pnpm publish
 ```
+**Note:** If you're publishing to GitHub, ensure that the GH_TOKEN environment variable is set up for authentication.
