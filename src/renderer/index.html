@@ -13,32 +13,40 @@
   <body>
     <div id="app">
       <div class="home">
-        <div class="header">
-          <img id="close" class="close" src="./assets/images/close.png" />
-          <img id="window-mini" class="window-mini" src="./assets/images/mini.png" />
-          <div class="logo">
-            <img src="./assets/images/logo.png" alt="logo" height="63"/>
+        <div class="header_wrapper">
+          <div class="header">
+            <div class="close-icon">
+              <svg id="close" class="close" viewBox="0 0 1024 1024" class="icon"  version="1.1" xmlns="http://www.w3.org/2000/svg"><path d="M720.7 354.8L669 303.1l-157 157-157-157-51.7 51.7 157 157-157 157 51.7 51.7 157-157 157 157 51.7-51.7-157-157z"/></svg>
+            </div>
+            <div class="window-mini-icon">
+              <svg id="window-mini" class="window-mini" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="iconify iconify--fxemoji" preserveAspectRatio="xMidYMid meet">
+                <path d="M130 256 L382 256" stroke-width="40"/>
+              </svg> 
+            </div>
+                       
+            <div class="logo">
+              <img src="./assets/images/logo.png" alt="logo" height="63"/>
+            </div>
+          </div>
+    
+          <div class="nav">
+            <div class="nav_item">
+              <a href="https://www.fusionist.io/" target="_blank">Website</a>
+            </div>
+            <span class="nav_divide"></span>
+            <div class="nav_item">
+              <a href="https://www.fusionist.io/" target="_blank">Top-up</a>
+            </div>
+            <span class="nav_divide"></span>
+            <div class="nav_item">
+              <a href="https://x.com/fusionistio" target="_blank">Support</a>
+            </div>
+            <span class="nav_divide"></span>
+            <div class="nav_item">
+              <a href="https://discord.com/invite/fusionistio" target="_blank">JoinDiscord</a>
+            </div>
           </div>
         </div>
-  
-        <div class="nav">
-          <div class="nav_item">
-            <a href="https://www.fusionist.io/" target="_blank">Website</a>
-          </div>
-          <span class="nav_divide"></span>
-          <div class="nav_item">
-            <a href="https://www.fusionist.io/" target="_blank">Top-up</a>
-          </div>
-          <span class="nav_divide"></span>
-          <div class="nav_item">
-            <a href="https://x.com/fusionistio" target="_blank">Support</a>
-          </div>
-          <span class="nav_divide"></span>
-          <div class="nav_item">
-            <a href="https://discord.com/invite/fusionistio" target="_blank">JoinDiscord</a>
-          </div>
-        </div>
-  
         <div class="footer">
           <div class="progress_wrapper">
             <div class="progress_text">
@@ -66,11 +74,11 @@
           <div class="loading-spinner"></div>
         </div>
       </div>
-<!--       
+      
       <video class="video-background" autoplay loop>
         <source src="./assets/images/bg.mp4" type="video/mp4">
         Your browser does not support the video tag.
-      </video> -->
+      </video>
     </div>
     <script type="module" src="./src/renderer.ts"></script>
   </body>

@@ -55,31 +55,53 @@ code {
 }
 
 .close {
+  width: 36px;
+  fill: white;
+}
+.close-icon {
   -webkit-app-region: no-drag;
   position: absolute;
   right: 5px;
   top: 5px;
   cursor: pointer;
   z-index: 20;
-  opacity: 0.8;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
-.close:hover {
-  opacity: 1;
+.close-icon:hover {
+  background: url(./images/btn_hover.png) no-repeat;
 }
 
 .window-mini {
+  width: 36px;
+}
+.window-mini path {
+  stroke: white;
+}
+.window-mini-icon {
   -webkit-app-region: no-drag;
   position: absolute;
   right: 55px;
   top: 5px;
   cursor: pointer;
   z-index: 20;
-  opacity: 0.8;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
-.window-mini:hover {
-  opacity: 1;
+.window-mini-icon:hover {
+  background: url(./images/btn_hover.png) no-repeat;
 }
 
+
+.header_wrapper {
+  backdrop-filter: blur(10px); 
+}
 .header {
   -webkit-app-region: drag;
   height: 70px;
@@ -170,6 +192,7 @@ code {
   display: flex;
   justify-content: center;
   align-items: center;
+  backdrop-filter: blur(10px); 
 }
 
 .progress_main_wrapper {
@@ -198,7 +221,7 @@ code {
   padding-top: 11px;
   display: flex;
   justify-content: center;
-  color: white;
+  color: #58F7E8;
   font-size: 50px;
   text-transform: uppercase;
   cursor: pointer;
