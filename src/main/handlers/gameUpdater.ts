@@ -106,6 +106,7 @@ async function downloadFile(remoteFile: string, Filesize: number): Promise<strin
         })
 
     }catch(e:unknown){
+        writer.end();
         Sentry.captureException(e);
         await wait(1000)
         return await downloadFile(remoteFile, Filesize)

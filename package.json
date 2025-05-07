@@ -1,6 +1,6 @@
 {
   "name": "fusionist_launcher",
-  "version": "0.0.28",
+  "version": "0.0.29",
   "description": "Fusionist Launcher",
   "main": "./out/main/index.js",
   "author": "fusionist.io",
