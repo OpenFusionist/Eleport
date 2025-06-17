@@ -63,7 +63,7 @@ function ensureDirExist(filePath: string): void {
 }
 
 
-async function downloadFile(remoteFile: string, Filesize: number): Promise<string> {
+async function downloadFile(remoteFile: string, Filesize: number, onProgress?: (chunkSize: number) => void): Promise<string> {
     const GAME_DIR = GetGameDownloadDir()
     const fileUrl = `${UPDATE_SERVER_URL}/${remoteFile}`;
     const localPath = path.join(GAME_DIR, remoteFile);
@@ -87,6 +87,7 @@ async function downloadFile(remoteFile: string, Filesize: number): Promise<strin
 
             response.data.on('data', (chunk) => {  
                 totalBytesWritten += chunk.length;
+                if(onProgress) onProgress(chunk.length);
                 // console.log(`${remoteFile}: Writing chunk of ${chunk.length} bytes... Total written: ${totalBytesWritten} bytes`);
                 writer.write(chunk);
             });
@@ -135,14 +136,19 @@ async function downloadFilesConcurrently(
             const file = isShift?queue.shift():queue.pop()
             if (!file) break;
             
-            await downloadFile(file.Path || "", file.Size);
+            const onProgress = (chunkSize: number) => {
+                completedSize += chunkSize;
+                if (progressCallback) {
+                    progressCallback(completed, completedSize);
+                }
+            };
+            await downloadFile(file.Path || "", file.Size, onProgress);
             
             CacheLocalManifestFiles[file.Path || ""] = {
                 Md5: file.Md5,
                 Size: file.Size
             };
             completed++;
-            completedSize += file.Size;
             
             if (progressCallback) {
                 progressCallback(completed, completedSize);
