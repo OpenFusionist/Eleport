@@ -62,6 +62,6 @@ $ pnpm build:win
 #### Publish
 To publish the build, use the following command:
 ```bash
-$ pnpm publish
+$ pnpm run publish
 ```
 **Note:** If you're publishing to GitHub, ensure that the GH_TOKEN environment variable is set up for authentication.
