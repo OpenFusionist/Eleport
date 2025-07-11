@@ -6,6 +6,7 @@ import "./../assets/main.css";
 import { init } from "./init";
 
 Sentry.init({
+  sendDefaultPii: true,
   integrations: [
   ],
   // Learn more at

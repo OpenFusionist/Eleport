@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, screen } from 'electron'
+import { app, shell, BrowserWindow, screen, dialog } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
@@ -96,7 +96,12 @@ function createWindow(): void {
   mainWindow.on('ready-to-show', () => {
     mainWindow?.show()
     
-    checkForGameUpdate();
+    checkForGameUpdate().then((result) => {
+      if(result.error) {
+        dialog.showErrorBox('Game Update Error', result.error)
+        app.quit()
+      }
+    })
   })
   initSender(mainWindow)
 
