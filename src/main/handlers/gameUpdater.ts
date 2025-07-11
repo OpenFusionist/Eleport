@@ -63,7 +63,7 @@ function ensureDirExist(filePath: string): void {
 }
 
 
-async function downloadFile(remoteFile: string, Filesize: number, onProgress?: (chunkSize: number) => void): Promise<string> {
+async function downloadFile(remoteFile: string, Filesize: number, onProgress: (chunkSize: number) => void): Promise<string> {
     const GAME_DIR = GetGameDownloadDir()
     const fileUrl = `${UPDATE_SERVER_URL}/${remoteFile}`;
     const localPath = path.join(GAME_DIR, remoteFile);
@@ -110,7 +110,7 @@ async function downloadFile(remoteFile: string, Filesize: number, onProgress?: (
         writer.end();
         Sentry.captureException(e);
         await wait(1000)
-        return await downloadFile(remoteFile, Filesize)
+        return await downloadFile(remoteFile, Filesize, onProgress)
     }
    
     return localPath;
