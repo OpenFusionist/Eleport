@@ -63,7 +63,7 @@ function ensureDirExist(filePath: string): void {
 }
 
 
-async function downloadFile(remoteFile: string, Filesize: number, onProgress: (chunkSize: number) => void): Promise<string> {
+async function downloadFile(remoteFile: string, Filesize: number, onProgress: (chunkSize: number) => void, isRetry: boolean = false): Promise<string> {
     const GAME_DIR = GetGameDownloadDir()
     const fileUrl = `${UPDATE_SERVER_URL}/${remoteFile}`;
     const localPath = path.join(GAME_DIR, remoteFile);
@@ -86,8 +86,8 @@ async function downloadFile(remoteFile: string, Filesize: number, onProgress: (c
             }, TIMEOUT_MS)
 
             response.data.on('data', (chunk) => {  
-                totalBytesWritten += chunk.length;
-                if(onProgress) onProgress(chunk.length);
+                totalBytesWritten += chunk.length;        
+                if(!isRetry && onProgress) onProgress(chunk.length);
                 // console.log(`${remoteFile}: Writing chunk of ${chunk.length} bytes... Total written: ${totalBytesWritten} bytes`);
                 writer.write(chunk);
             });
@@ -110,7 +110,7 @@ async function downloadFile(remoteFile: string, Filesize: number, onProgress: (c
         writer.end();
         Sentry.captureException(e);
         await wait(1000)
-        return await downloadFile(remoteFile, Filesize, onProgress)
+        return await downloadFile(remoteFile, Filesize, onProgress, true)
     }
    
     return localPath;
