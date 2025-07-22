@@ -228,7 +228,9 @@ async function checkForGameUpdate(): Promise<IUpdateResult> {
         for (const filePath of filesToDelete) {
             deleteFile(filePath);
             delete CacheLocalManifestFiles[filePath]
-            mainWindow?.webContents.send('game-update-progress', { type: 'delete', file: filePath });
+            if(mainWindow && !mainWindow.isDestroyed()) {
+                mainWindow.webContents.send('game-update-progress', { type: 'delete', file: filePath });
+            }
         }
 
         if (filesToDownload.length === 0) {
@@ -237,11 +239,15 @@ async function checkForGameUpdate(): Promise<IUpdateResult> {
         }
 
         const total = filesToDownload.length;
-        mainWindow?.webContents.send('game-update-progress', { type: 'download', completed:0, completedSize:0, total, percent:0, totalSize: downloadSize});
+        if(mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send('game-update-progress', { type: 'download', completed:0, completedSize:0, total, percent:0, totalSize: downloadSize});
+        }
 
         await downloadFilesConcurrently(filesToDownload, 10, (completed, completedSize) => {
             const percent = Math.round((completedSize / downloadSize) * 100);
-            mainWindow?.webContents.send('game-update-progress', { type: 'download', completed, completedSize, total, percent, totalSize: downloadSize});
+            if(mainWindow && !mainWindow.isDestroyed()) {
+                mainWindow.webContents.send('game-update-progress', { type: 'download', completed, completedSize, total, percent, totalSize: downloadSize});
+            }
         });
 
         writeLocalManifest(remoteManifest);

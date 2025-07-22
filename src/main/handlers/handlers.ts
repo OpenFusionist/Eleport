@@ -13,7 +13,9 @@ export function initHandlers(): void {
   ipcMain.on('play', play)
   ipcMain.on('close', app.quit)
   ipcMain.on('window-mini',() => {
-    mainWindow?.minimize();
+    if(mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.minimize();
+    }
   })
   ipcMain.on('window-focus', windowFocus)
 

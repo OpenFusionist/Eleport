@@ -23,7 +23,9 @@ export async function play() {
   }
 
   const exePath = path.join(GetGameDownloadDir(), 'fusionist.exe'); //GetGameDownloadDir() + "fusionist.exe"// path.join(__dirname, 'your-executable.exe'); 
-  mainWindow?.minimize();
+  if(mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.minimize();
+  }
   exec(`"${exePath}"`, (error, stdout, stderr) => {
     if (error) {
       Sentry.captureException(error);
