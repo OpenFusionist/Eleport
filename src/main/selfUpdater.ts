@@ -1,7 +1,8 @@
-import { BrowserWindow, dialog } from "electron";
+import { dialog } from "electron";
 import { SELF_UPDATE_SERVER } from "./configs";
 import { autoUpdater } from 'electron-updater'
 import * as Sentry from "@sentry/electron/main";
+import { mainWindow } from ".";
 
 export function initSelfUpdater(): void {
   const feedURL = SELF_UPDATE_SERVER
@@ -10,15 +11,15 @@ export function initSelfUpdater(): void {
   // autoUpdater.forceDevUpdateConfig = true
   autoUpdater.checkForUpdates()
 
-  let alwaysOnTopWindow = new BrowserWindow({
-    width: 400,
-    height: 300,
-    show: false,
-    alwaysOnTop: true,
-    skipTaskbar: true,
-    frame: false,
-    transparent: true,
-  });
+  // let alwaysOnTopWindow = new BrowserWindow({
+  //   width: 400,
+  //   height: 300,
+  //   show: false,
+  //   alwaysOnTop: true,
+  //   skipTaskbar: true,
+  //   frame: false,
+  //   transparent: true,
+  // });
 
   // Listener
   autoUpdater.on('checking-for-update', () => {
@@ -45,12 +46,14 @@ export function initSelfUpdater(): void {
 
   autoUpdater.on('update-downloaded', (info) => {
     console.log('update-downloaded:', info);
-    dialog.showMessageBox(alwaysOnTopWindow, {
-      type: "info",
-      title: "[Fusionist Launcher] Update Ready to Install!",
-      message: "The latest version of the launcher has been downloaded successfully. The app will now restart to apply the update.",
-    }).then(() => {
-      autoUpdater.quitAndInstall(true, true);
-    });
+    if(mainWindow) {
+      dialog.showMessageBox(mainWindow, {
+        type: "info",
+        title: "[Fusionist Launcher] Update Ready to Install!",
+        message: "The latest version of the launcher has been downloaded successfully. The app will now restart to apply the update.",
+      }).then(() => {
+        autoUpdater.quitAndInstall(true, true);
+      });
+    }
   });
 }
