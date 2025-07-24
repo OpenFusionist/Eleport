@@ -63,7 +63,7 @@ function ensureDirExist(filePath: string): void {
 }
 
 
-async function downloadFile(remoteFile: string, Filesize: number, onProgress: (chunkSize: number) => void, isRetry: boolean = false): Promise<string> {
+async function downloadFile(remoteFile: string, Filesize: number, onProgress: (chunkSize: number) => void): Promise<string> {
     const GAME_DIR = GetGameDownloadDir()
     const fileUrl = `${UPDATE_SERVER_URL}/${remoteFile}`;
     const localPath = path.join(GAME_DIR, remoteFile);
@@ -87,7 +87,7 @@ async function downloadFile(remoteFile: string, Filesize: number, onProgress: (c
 
             response.data.on('data', (chunk) => {  
                 totalBytesWritten += chunk.length;        
-                if(!isRetry && onProgress) onProgress(chunk.length);
+                if(onProgress) onProgress(chunk.length);
                 // console.log(`${remoteFile}: Writing chunk of ${chunk.length} bytes... Total written: ${totalBytesWritten} bytes`);
                 writer.write(chunk);
             });
@@ -110,7 +110,7 @@ async function downloadFile(remoteFile: string, Filesize: number, onProgress: (c
         writer.end();
         Sentry.captureException(e);
         await wait(1000)
-        return await downloadFile(remoteFile, Filesize, onProgress, true)
+        return await downloadFile(remoteFile, Filesize, onProgress)
     }
    
     return localPath;
@@ -133,13 +133,18 @@ async function downloadFilesConcurrently(
     
     async function worker(isShift): Promise<void> {
         while (queue.length > 0) {
+            let currentReceivedSize = 0;
+
             const file = isShift?queue.shift():queue.pop()
             if (!file) break;
-            
+
             const onProgress = (chunkSize: number) => {
-                completedSize += chunkSize;
-                if (progressCallback) {
-                    progressCallback(completed, completedSize);
+                currentReceivedSize += chunkSize;
+                if(currentReceivedSize <= file.Size) {
+                    completedSize += chunkSize;
+                    if (progressCallback) {
+                        progressCallback(completed, completedSize);
+                    }
                 }
             };
             await downloadFile(file.Path || "", file.Size, onProgress);

@@ -137,7 +137,7 @@ export function updateVersion() {
   if(!version_div)  return
   
   window.api.version().then((vv) => {
-    version_div.innerHTML = "Launcher: v"+PackageJSON.version
+    version_div.innerHTML = "<a href='https://github.com/OpenFusionist/Eleport/releases' target='_blank'>Launcher: v"+PackageJSON.version+"</a>"
     if(vv)
       version_div.innerHTML = "Game: " + vv + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + version_div.innerHTML
   })
