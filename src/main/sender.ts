@@ -10,7 +10,8 @@ export function initSender(mainWindow:BrowserWindow) {
     if (ProcessList.toLowerCase().indexOf(GAME_PROCESS_NAME.toLowerCase()) > -1) {
       isRuning = true
     }
-
-    mainWindow.webContents.send("game-runing", isRuning)
+    if(mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send("game-runing", isRuning)
+    }
   });
 }
