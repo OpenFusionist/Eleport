@@ -66,9 +66,12 @@ if (!gotTheLock) {
         Total: 0,
         Files: CacheLocalManifestFiles
       }
-      await writeLocalManifest(Manifest)
+      // if CacheLocalManifestFiles is empty, then don't save
+      if(Object.keys(CacheLocalManifestFiles).length !== 0) {
+        await writeLocalManifest(Manifest)
+        console.log('before-quit save success!')
+      }
       globalVars.IsUpdated = true
-      console.log('before-quit save success!')
       app.quit()
     }
   })

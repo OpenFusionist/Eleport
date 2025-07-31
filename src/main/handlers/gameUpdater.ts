@@ -62,8 +62,7 @@ function ensureDirExist(filePath: string): void {
     }
 }
 
-
-async function downloadFile(remoteFile: string, Filesize: number, onProgress: (chunkSize: number) => void): Promise<string> {
+async function downloadFile(remoteFile: string, Filesize: number, onProgress: (fileSize: number) => void): Promise<string> {
     const GAME_DIR = GetGameDownloadDir()
     const fileUrl = `${UPDATE_SERVER_URL}/${remoteFile}`;
     const localPath = path.join(GAME_DIR, remoteFile);
@@ -87,7 +86,7 @@ async function downloadFile(remoteFile: string, Filesize: number, onProgress: (c
 
             response.data.on('data', (chunk) => {  
                 totalBytesWritten += chunk.length;        
-                if(onProgress) onProgress(chunk.length);
+                if(onProgress) onProgress(totalBytesWritten);
                 // console.log(`${remoteFile}: Writing chunk of ${chunk.length} bytes... Total written: ${totalBytesWritten} bytes`);
                 writer.write(chunk);
             });
@@ -106,8 +105,9 @@ async function downloadFile(remoteFile: string, Filesize: number, onProgress: (c
             });
         })
 
-    }catch(e:unknown){
+    } catch (e:unknown) {
         writer.end();
+        if(onProgress) onProgress(0)
         Sentry.captureException(e);
         await wait(1000)
         return await downloadFile(remoteFile, Filesize, onProgress)
@@ -134,29 +134,63 @@ async function downloadFilesConcurrently(
     async function worker(isShift): Promise<void> {
         while (queue.length > 0) {
             let currentReceivedSize = 0;
+            let lastReportedSize = 0;
 
             const file = isShift?queue.shift():queue.pop()
             if (!file) break;
 
-            const onProgress = (chunkSize: number) => {
-                currentReceivedSize += chunkSize;
+            const onProgress = (fileSize: number) => {
+                currentReceivedSize = fileSize;
+                
+                // Handle download failure reset (fileSize = 0)
+                if (fileSize === 0 && lastReportedSize > 0) {
+                    // Subtract the previously counted size when download fails
+                    completedSize -= lastReportedSize;
+                    lastReportedSize = 0;
+                    currentReceivedSize = 0;
+                    if (progressCallback) {
+                        progressCallback(completed, completedSize);
+                    }
+                    return;
+                }
+                
                 if(currentReceivedSize <= file.Size) {
-                    completedSize += chunkSize;
+                    // Only add the difference to avoid duplicate counting
+                    const sizeDiff = currentReceivedSize - lastReportedSize;
+                    completedSize += sizeDiff;
+                    lastReportedSize = currentReceivedSize;
                     if (progressCallback) {
                         progressCallback(completed, completedSize);
                     }
                 }
             };
-            await downloadFile(file.Path || "", file.Size, onProgress);
             
-            CacheLocalManifestFiles[file.Path || ""] = {
-                Md5: file.Md5,
-                Size: file.Size
-            };
-            completed++;
-            
-            if (progressCallback) {
-                progressCallback(completed, completedSize);
+            try {
+                await downloadFile(file.Path || "", file.Size, onProgress);
+                
+                CacheLocalManifestFiles[file.Path || ""] = {
+                    Md5: file.Md5,
+                    Size: file.Size
+                };
+                completed++;
+                
+                if (progressCallback) {
+                    progressCallback(completed, completedSize);
+                }
+            } catch (error) {
+                // If download fails completely, ensure we don't count partial progress
+                if (lastReportedSize > 0) {
+                    completedSize -= lastReportedSize;
+                }
+                
+                // Put the failed file back to the queue for retry
+                queue.push(file);
+                
+                if (progressCallback) {
+                    progressCallback(completed, completedSize);
+                }
+                Sentry.captureException(error);
+                console.warn(`Download failed for ${file.Path}, added back to queue. Remaining: ${queue.length}`);
             }
         }
     }
