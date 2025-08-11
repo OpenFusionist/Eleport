@@ -92,7 +92,7 @@ async function downloadFile(remoteFile: string, onProgress: (fileSize: number) =
 
             resetTimeout(); 
 
-            response.data.on('data', (chunk) => {  
+            response.data.on('data', (chunk) => {
                 totalBytesWritten += chunk.length;        
                 if(onProgress) onProgress(totalBytesWritten);
                 // console.log(`${remoteFile}: Writing chunk of ${chunk.length} bytes... Total written: ${totalBytesWritten} bytes`);
@@ -121,7 +121,7 @@ async function downloadFile(remoteFile: string, onProgress: (fileSize: number) =
     } catch (e:unknown) {
         if(onProgress) onProgress(0)
         Sentry.captureException(e);
-        await wait(1000)
+        await wait(3000)
         return await downloadFile(remoteFile, onProgress, retryCount - 1)
     }
    
@@ -209,7 +209,7 @@ async function downloadFilesConcurrently(
     
     for (let i = 0; i < concurrency; i++) {
         let isShift = true;
-        if (i <= 1) isShift = false
+        if (i <= concurrency/3) isShift = false
 
         workers.push(worker(isShift));
     }
