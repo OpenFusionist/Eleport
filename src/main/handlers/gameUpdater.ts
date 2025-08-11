@@ -62,55 +62,67 @@ function ensureDirExist(filePath: string): void {
     }
 }
 
-async function downloadFile(remoteFile: string, Filesize: number, onProgress: (fileSize: number) => void): Promise<string> {
+async function downloadFile(remoteFile: string, onProgress: (fileSize: number) => void, retryCount = 50): Promise<string> {
     const GAME_DIR = GetGameDownloadDir()
     const fileUrl = `${UPDATE_SERVER_URL}/${remoteFile}`;
     const localPath = path.join(GAME_DIR, remoteFile);
     ensureDirExist(localPath);
 
-    const writer = fs.createWriteStream(localPath);
+    const writer = fs.createWriteStream(localPath, {
+        highWaterMark: 1024 * 1024
+    });
+    let timeoutTimer: NodeJS.Timeout;
+
+    if (retryCount <= 0) {
+        throw new Error(`Failed to download file ${remoteFile}: max retry attempts reached.`);
+    }
+
     try{
         const response = await axios.get(fileUrl, { responseType: 'stream', timeout: TIMEOUT_MS });
 
         await new Promise((resolve, reject) => {
-            let cacheTotalBytesWritten = -1;
             let totalBytesWritten = 0;
 
-            const timer = setInterval(() => {
-                if(cacheTotalBytesWritten === totalBytesWritten) {
-                    clearInterval(timer)
-                    reject("error")
-                }
-                cacheTotalBytesWritten = totalBytesWritten
-            }, TIMEOUT_MS)
+            const resetTimeout = () => {
+                clearTimeout(timeoutTimer);
+                timeoutTimer = setTimeout(() => {
+                    writer.destroy(new Error('Download stalled'));
+                }, TIMEOUT_MS);
+            };
+
+            resetTimeout(); 
 
             response.data.on('data', (chunk) => {  
                 totalBytesWritten += chunk.length;        
                 if(onProgress) onProgress(totalBytesWritten);
                 // console.log(`${remoteFile}: Writing chunk of ${chunk.length} bytes... Total written: ${totalBytesWritten} bytes`);
-                writer.write(chunk);
+                resetTimeout();
             });
-            
-            response.data.on('end', () => {
-                // console.log('File writing completed!');
-                writer.end();
-                clearInterval(timer)
+
+            response.data.on('error', err => {
+                clearTimeout(timeoutTimer);
+                writer.destroy();
+                reject(err);
+            });
+
+            writer.on('finish', () => {
+                clearTimeout(timeoutTimer);
                 resolve(1);
             });
     
             writer.on('error', (err: Error) => {
-                writer.end();
-                clearInterval(timer)
+                clearTimeout(timeoutTimer);
                 reject(err)
             });
+
+            response.data.pipe(writer);
         })
 
     } catch (e:unknown) {
-        writer.end();
         if(onProgress) onProgress(0)
         Sentry.captureException(e);
         await wait(1000)
-        return await downloadFile(remoteFile, Filesize, onProgress)
+        return await downloadFile(remoteFile, onProgress, retryCount - 1)
     }
    
     return localPath;
@@ -166,7 +178,7 @@ async function downloadFilesConcurrently(
             };
             
             try {
-                await downloadFile(file.Path || "", file.Size, onProgress);
+                await downloadFile(file.Path || "", onProgress);
                 
                 CacheLocalManifestFiles[file.Path || ""] = {
                     Md5: file.Md5,
