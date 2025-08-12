@@ -62,6 +62,8 @@ function ensureDirExist(filePath: string): void {
     }
 }
 
+let PeekSpeed:number = 0;
+
 async function downloadFile(remoteFile: string, onProgress: (fileSize: number) => void, retryCount = 50): Promise<string> {
     const GAME_DIR = GetGameDownloadDir()
     const fileUrl = `${UPDATE_SERVER_URL}/${remoteFile}`;
@@ -71,7 +73,7 @@ async function downloadFile(remoteFile: string, onProgress: (fileSize: number) =
     const writer = fs.createWriteStream(localPath, {
         highWaterMark: 1024 * 1024
     });
-    let timeoutTimer: NodeJS.Timeout;
+    let speedCheckTimer: NodeJS.Timeout;
 
     if (retryCount <= 0) {
         throw new Error(`Failed to download file ${remoteFile}: max retry attempts reached.`);
@@ -82,36 +84,77 @@ async function downloadFile(remoteFile: string, onProgress: (fileSize: number) =
 
         await new Promise((resolve, reject) => {
             let totalBytesWritten = 0;
+            let lastSpeedCheck = Date.now();
+            let lastSpeedCheckBytes = 0;
+            const MIN_SPEED_THRESHOLD = Math.max(Math.min(PeekSpeed * 0.1, 50 * 1024), 2 * 1024 * 1024);
+            const SPEED_CHECK_INTERVAL = 60000; // Check every 60 seconds
 
-            const resetTimeout = () => {
-                clearTimeout(timeoutTimer);
-                timeoutTimer = setTimeout(() => {
-                    writer.destroy(new Error('Download stalled'));
-                }, TIMEOUT_MS);
+            const checkSpeed = () => {
+                const now = Date.now();
+                const timeDiff = (now - lastSpeedCheck) / 1000; // in seconds
+                const bytesDiff = totalBytesWritten - lastSpeedCheckBytes;
+                const currentSpeed = bytesDiff / timeDiff; // bytes per second
+
+                if (timeDiff >= SPEED_CHECK_INTERVAL / 1000 && currentSpeed < MIN_SPEED_THRESHOLD && totalBytesWritten > 0) {
+                    console.warn(`${remoteFile}: Speed too low (${(currentSpeed / 1024).toFixed(2)} kb/s), reconnecting...`);
+                    clearTimeout(speedCheckTimer);
+                    clearTimeout(peekSpeedTimer);
+                    writer.destroy(new Error('Speed too low, reconnecting'));
+                    return;
+                }
+
+                lastSpeedCheck = now;
+                lastSpeedCheckBytes = totalBytesWritten;
+                
+                speedCheckTimer = setTimeout(checkSpeed, SPEED_CHECK_INTERVAL);
             };
 
-            resetTimeout(); 
+            // Peak speed tracking
+            let lastPeekSpeedCheck = Date.now();
+            let lastPeekSpeedCheckBytes = 0;
+            const PEEK_SPEED_CHECK_INTERVAL = 5000; // Check every 5 seconds
+            let peekSpeedTimer: NodeJS.Timeout;
+
+            const checkPeekSpeed = () => {
+                const now = Date.now();
+                const timeDiff = (now - lastPeekSpeedCheck) / 1000; // in seconds
+                const bytesDiff = totalBytesWritten - lastPeekSpeedCheckBytes;
+                const currentSpeed = bytesDiff / timeDiff; // bytes per second
+
+                if (currentSpeed > PeekSpeed) {
+                    PeekSpeed = currentSpeed;
+                }
+
+                lastPeekSpeedCheck = now;
+                lastPeekSpeedCheckBytes = totalBytesWritten;
+                // console.log("PeekSpeed", PeekSpeed)
+                peekSpeedTimer = setTimeout(checkPeekSpeed, PEEK_SPEED_CHECK_INTERVAL);
+            };
+
+            peekSpeedTimer = setTimeout(checkPeekSpeed, PEEK_SPEED_CHECK_INTERVAL);
+            speedCheckTimer = setTimeout(checkSpeed, SPEED_CHECK_INTERVAL);
 
             response.data.on('data', (chunk) => {
                 totalBytesWritten += chunk.length;        
                 if(onProgress) onProgress(totalBytesWritten);
-                // console.log(`${remoteFile}: Writing chunk of ${chunk.length} bytes... Total written: ${totalBytesWritten} bytes`);
-                resetTimeout();
             });
 
             response.data.on('error', err => {
-                clearTimeout(timeoutTimer);
+                clearTimeout(speedCheckTimer);
+                clearTimeout(peekSpeedTimer);
                 writer.destroy();
                 reject(err);
             });
 
             writer.on('finish', () => {
-                clearTimeout(timeoutTimer);
+                clearTimeout(speedCheckTimer);
+                clearTimeout(peekSpeedTimer);
                 resolve(1);
             });
     
             writer.on('error', (err: Error) => {
-                clearTimeout(timeoutTimer);
+                clearTimeout(speedCheckTimer);
+                clearTimeout(peekSpeedTimer);
                 reject(err)
             });
 
@@ -209,7 +252,7 @@ async function downloadFilesConcurrently(
     
     for (let i = 0; i < concurrency; i++) {
         let isShift = true;
-        if (i <= concurrency/3) isShift = false
+        if (i <= 1) isShift = false
 
         workers.push(worker(isShift));
     }
