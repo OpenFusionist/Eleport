@@ -13,6 +13,7 @@ import * as Sentry from "@sentry/electron/main";
 
 Sentry.init({
   dsn: import.meta.env.VITE_SENTRY_DSN,
+  release: app.getVersion(),
 });
 
 export let mainWindow:BrowserWindow | undefined
