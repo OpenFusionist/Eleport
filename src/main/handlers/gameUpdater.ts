@@ -2,7 +2,7 @@
 import axios from 'axios';
 import fs from 'fs';
 import path from 'path';
-import { GetGameDownloadDir, wait } from './../utils';
+import { GetGameDownloadDir, wait, checkDiskSpace } from './../utils';
 import { TIMEOUT_MS, UPDATE_SERVER_URL } from './../configs';
 import { mainWindow } from '../.';
 import { IUpdateResult } from '../../preload/index.d';
@@ -318,6 +318,20 @@ async function checkForGameUpdate(): Promise<IUpdateResult> {
         const localManifest = readLocalManifest();
 
         const { filesToDownload, filesToDelete, downloadSize } = compareManifests(localManifest, remoteManifest);
+        
+        // Check if there is enough disk space
+        if (downloadSize > 0) {
+            const gameDir = GetGameDownloadDir();
+            const diskSpaceCheck = await checkDiskSpace(gameDir, downloadSize);
+            
+            if (!diskSpaceCheck.hasEnoughSpace) {
+                console.warn('Insufficient disk space, cancelling download:', diskSpaceCheck.errorMessage);
+                return { error: diskSpaceCheck.errorMessage };
+            }
+            
+            console.log(`Disk space check passed, available: ${(diskSpaceCheck.availableBytes / 1024 / 1024 / 1024).toFixed(2)} GB, required: ${(downloadSize / 1024 / 1024 / 1024).toFixed(2)} GB`);
+        }
+        
         CacheLocalManifestFiles = localManifest.Files
         for (const filePath of filesToDelete) {
             deleteFile(filePath);
