@@ -70,17 +70,18 @@ async function downloadFile(remoteFile: string, onProgress: (fileSize: number) =
     const localPath = path.join(GAME_DIR, remoteFile);
     ensureDirExist(localPath);
 
-    const writer = fs.createWriteStream(localPath, {
-        highWaterMark: 1024 * 1024
-    });
-    let speedCheckTimer: NodeJS.Timeout;
-
     if (retryCount <= 0) {
         throw new Error(`Failed to download file ${remoteFile}: max retry attempts reached.`);
     }
 
+    const writer = fs.createWriteStream(localPath, {
+        highWaterMark: 1024 * 1024
+    });
+    let speedCheckTimer: NodeJS.Timeout;
+    let response: any = null;
+
     try{
-        const response = await axios.get(fileUrl, { responseType: 'stream', timeout: TIMEOUT_MS });
+        response = await axios.get(fileUrl, { responseType: 'stream', timeout: TIMEOUT_MS });
 
         await new Promise((resolve, reject) => {
             let totalBytesWritten = 0;
@@ -88,6 +89,11 @@ async function downloadFile(remoteFile: string, onProgress: (fileSize: number) =
             let lastSpeedCheckBytes = 0;
             const MIN_SPEED_THRESHOLD = Math.max(Math.min(PeekSpeed * 0.1, 50 * 1024), 2 * 1024 * 1024);
             const SPEED_CHECK_INTERVAL = 60000; // Check every 60 seconds
+
+            const cleanup = () => {
+                clearTimeout(speedCheckTimer);
+                clearTimeout(peekSpeedTimer);
+            };
 
             const checkSpeed = () => {
                 const now = Date.now();
@@ -97,8 +103,7 @@ async function downloadFile(remoteFile: string, onProgress: (fileSize: number) =
 
                 if (timeDiff >= SPEED_CHECK_INTERVAL / 1000 && currentSpeed < MIN_SPEED_THRESHOLD && totalBytesWritten > 0) {
                     console.warn(`${remoteFile}: Speed too low (${(currentSpeed / 1024).toFixed(2)} kb/s), reconnecting...`);
-                    clearTimeout(speedCheckTimer);
-                    clearTimeout(peekSpeedTimer);
+                    cleanup();
                     writer.destroy(new Error('Speed too low, reconnecting'));
                     return;
                 }
@@ -140,21 +145,18 @@ async function downloadFile(remoteFile: string, onProgress: (fileSize: number) =
             });
 
             response.data.on('error', err => {
-                clearTimeout(speedCheckTimer);
-                clearTimeout(peekSpeedTimer);
+                cleanup();
                 writer.destroy();
                 reject(err);
             });
 
             writer.on('finish', () => {
-                clearTimeout(speedCheckTimer);
-                clearTimeout(peekSpeedTimer);
+                cleanup();
                 resolve(1);
             });
     
             writer.on('error', (err: Error) => {
-                clearTimeout(speedCheckTimer);
-                clearTimeout(peekSpeedTimer);
+                cleanup();
                 reject(err)
             });
 
@@ -163,9 +165,16 @@ async function downloadFile(remoteFile: string, onProgress: (fileSize: number) =
 
     } catch (e:unknown) {
         if(onProgress) onProgress(0)
-        Sentry.captureException(e);
+        // Sentry.captureException(e);
         await wait(3000)
         return await downloadFile(remoteFile, onProgress, retryCount - 1)
+    } finally {
+        if (writer && !writer.destroyed) {
+            writer.destroy();
+        }
+        if (response?.data && typeof response.data.destroy === 'function') {
+            response.data.destroy();
+        }
     }
    
     return localPath;
