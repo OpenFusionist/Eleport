@@ -87,7 +87,7 @@ async function downloadFile(remoteFile: string, onProgress: (fileSize: number) =
             let totalBytesWritten = 0;
             let lastSpeedCheck = Date.now();
             let lastSpeedCheckBytes = 0;
-            const MIN_SPEED_THRESHOLD = Math.max(Math.min(PeekSpeed * 0.1, 50 * 1024), 2 * 1024 * 1024);
+            const MIN_SPEED_THRESHOLD = Math.max(Math.min(PeekSpeed * 0.05, 2 * 1024 * 1024), 50 * 1024);
             const SPEED_CHECK_INTERVAL = 60000; // Check every 60 seconds
 
             const cleanup = () => {
